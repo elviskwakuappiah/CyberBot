@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { LayoutGrid, PlayCircle, Home, HelpCircle, Shield } from 'lucide-react';
 import { motion } from 'motion/react';
 import { soundService } from '../services/soundService';
+import Logo from './Logo';
 
 interface MainMenuProps {
   onStart: () => void;
@@ -26,14 +27,7 @@ const MainMenu: React.FC<MainMenuProps> = ({ onStart, onContinue, onStartTutoria
       <div className="max-w-4xl text-center space-y-12 relative z-10">
         <div className="relative inline-block">
           <div className="absolute -inset-4 bg-cyan-500/10 blur-xl rounded-full"></div>
-          <img 
-            src="https://storage.googleapis.com/static.aistudio.google.com/content-attachments/58957827-046e-4467-876e-573574778174.png" 
-            alt="CYBERBOT" 
-            className="h-32 md:h-48 w-auto relative z-10 drop-shadow-[0_0_30px_rgba(34,211,238,0.5)]"
-            referrerPolicy="no-referrer"
-            crossOrigin="anonymous"
-            loading="eager"
-          />
+          <Logo className="scale-125 md:scale-150 mb-8" />
           <div className="absolute -top-6 -right-8 bg-cyan-600 text-white px-4 py-1 text-[10px] font-black uppercase rotate-12 font-orbitron shadow-[0_0_20px_rgba(6,182,212,0.6)] border border-white/20 z-20">
             SQUAD DEFENSE PROTOCOL
           </div>

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { LogIn, UserPlus, Shield, Lock, User, Eye, EyeOff, ChevronDown, Linkedin, Chrome, GraduationCap } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
+import Logo from './Logo';
 
 interface AuthPageProps {
   onAuthSuccess: (user: { id: string; username: string; twoFactorEnabled: boolean }) => void;
@@ -90,12 +91,7 @@ const AuthPage: React.FC<AuthPageProps> = ({ onAuthSuccess }) => {
         className="w-full max-w-2xl relative z-10"
       >
         <div className="text-center mb-6">
-          <div className="flex items-center justify-center gap-3 mb-2">
-            <Shield className="w-10 h-10 text-emerald-500 drop-shadow-[0_0_15px_rgba(16,185,129,0.5)]" />
-            <h1 className="text-5xl font-bold tracking-tighter uppercase italic">
-              Cyber<span className="text-emerald-500">Bot</span>
-            </h1>
-          </div>
+          <Logo className="mb-2" />
         </div>
 
         <div className="w-full max-w-[450px] text-left font-mono text-[13px] border-white bg-zinc-900/50 backdrop-blur-xl border rounded-3xl shadow-2xl ml-0 mb-0 -mt-4 flex flex-col overflow-hidden relative mx-auto">
