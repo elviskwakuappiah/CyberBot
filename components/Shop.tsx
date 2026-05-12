@@ -105,9 +105,10 @@ const Shop: React.FC<ShopProps> = ({ money, upgrades, onBuyRobot, onBuyWeapon, o
               const isUnlocked = upgrades.unlockedUnits?.includes(robot.unit) || false;
               const isActive = upgrades.activeSquad?.includes(robot.unit) || false;
               const canAfford = money >= robot.price;
+              const isTotalLimitReached = (upgrades.unlockedUnits?.length || 0) >= 5;
               
               return (
-                <div key={robot.unit} className={`p-4 border-2 transition-all relative overflow-hidden ${isActive ? 'border-emerald-500 bg-emerald-950/20' : isUnlocked ? 'border-cyan-900/50 bg-cyan-950/5' : canAfford ? 'border-gray-800 bg-gray-900/50 hover:border-cyan-500/40' : 'border-gray-900 bg-black opacity-60'}`}>
+                <div key={robot.unit} className={`p-4 border-2 transition-all relative overflow-hidden ${isActive ? 'border-emerald-500 bg-emerald-950/20' : isUnlocked ? 'border-cyan-900/50 bg-cyan-950/5' : canAfford && !isTotalLimitReached ? 'border-gray-800 bg-gray-900/50 hover:border-cyan-500/40' : 'border-gray-900 bg-black opacity-60'}`}>
                   <div className="flex justify-between items-start mb-2">
                     <h4 className="text-xs font-black" style={{ color: robot.color }}>{robot.name}</h4>
                     {isUnlocked && <span className="text-[8px] font-black text-emerald-500 uppercase tracking-tighter">{isActive ? 'ACTIVE' : 'RESERVE'}</span>}
@@ -124,11 +125,11 @@ const Shop: React.FC<ShopProps> = ({ money, upgrades, onBuyRobot, onBuyWeapon, o
                     </button>
                   ) : (
                     <button 
-                      disabled={!canAfford} 
+                      disabled={!canAfford || isTotalLimitReached} 
                       onClick={() => onUnlockUnit(robot.unit, robot.price)} 
-                      className={`w-full py-2 text-[10px] font-black uppercase rounded-sm transition-all ${canAfford ? 'bg-yellow-600 hover:bg-yellow-500 text-black shadow-md' : 'bg-gray-800 text-gray-600 cursor-not-allowed'}`}
+                      className={`w-full py-2 text-[10px] font-black uppercase rounded-sm transition-all ${canAfford && !isTotalLimitReached ? 'bg-yellow-600 hover:bg-yellow-500 text-black shadow-md' : 'bg-gray-800 text-gray-600 cursor-not-allowed'}`}
                     >
-                      RECRUIT ${robot.price}
+                      {isTotalLimitReached ? "SQUAD FULL" : `RECRUIT $${robot.price}`}
                     </button>
                   )}
                 </div>

@@ -32,8 +32,6 @@ export interface LevelInfo {
   level: number;
   title: string;
   description: string;
-  threatLevel: string;
-  enemyType: string;
 }
 
 export interface Upgrades {
@@ -77,4 +75,32 @@ export interface Enemy extends Entity {
   isTransformed?: boolean;
   transformTimer?: number;
   unit?: RobotUnit;
+}
+
+export interface EnemySpawn {
+  type: string;
+  count: number;
+  healthMult: number;
+  damageMult: number;
+  speedMult: number;
+}
+
+export enum SectorTheme {
+  CYBER_CITY = 'CYBER_CITY',
+  INDUSTRIAL = 'INDUSTRIAL',
+  WASTELAND = 'WASTELAND',
+  NEON_DISTRICT = 'NEON_DISTRICT',
+  ORBITAL_STATION = 'ORBITAL_STATION',
+  DATA_CORE = 'DATA_CORE'
+}
+
+export interface Sector {
+  id: number;
+  name: string;
+  description: string;
+  enemies: EnemySpawn[];
+  boss?: string;
+  bossHealth?: number;
+  reward: number;
+  theme: SectorTheme;
 }

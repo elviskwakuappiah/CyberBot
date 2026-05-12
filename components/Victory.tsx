@@ -25,7 +25,7 @@ const Victory: React.FC<VictoryProps> = ({ onMenu }) => {
       <div className="max-w-2xl text-center space-y-12 relative z-10">
         <div className="space-y-4 animate-in fade-in duration-1000">
           <h1 className="text-5xl font-black text-gray-400 uppercase italic tracking-tighter">
-            THE CITY HAS <span className="text-white">NO MORE</span> THREATS
+            THE CITY IS <span className="text-white">SECURED</span>
           </h1>
           <p className="text-cyan-400 text-xl tracking-widest uppercase font-bold animate-pulse font-orbitron">The Mechanical War is Over.</p>
         </div>

@@ -1,18 +1,20 @@
 
-import React from 'react';
-import { LayoutGrid, PlayCircle, ShieldAlert, Home, HelpCircle, Music } from 'lucide-react';
+import React, { useState } from 'react';
+import { LayoutGrid, PlayCircle, Home, HelpCircle, Shield } from 'lucide-react';
+import { motion } from 'motion/react';
 import { soundService } from '../services/soundService';
 
 interface MainMenuProps {
   onStart: () => void;
   onContinue: () => void;
+  onStartTutorial: () => void;
   onOpenBase: () => void;
   onOpenLevelSelect: () => void;
   onOpenHowToPlay: () => void;
   hasSave: boolean;
 }
 
-const MainMenu: React.FC<MainMenuProps> = ({ onStart, onContinue, onOpenBase, onOpenLevelSelect, onOpenHowToPlay, hasSave }) => {
+const MainMenu: React.FC<MainMenuProps> = ({ onStart, onContinue, onStartTutorial, onOpenBase, onOpenLevelSelect, onOpenHowToPlay, hasSave }) => {
   return (
     <div className="min-h-full w-full flex flex-col items-center justify-start md:justify-center bg-gradient-to-b from-black via-gray-900 to-blue-950 p-4 py-12 relative overflow-y-auto">
       {/* Background Decorative Elements */}
@@ -24,10 +26,15 @@ const MainMenu: React.FC<MainMenuProps> = ({ onStart, onContinue, onOpenBase, on
       <div className="max-w-4xl text-center space-y-12 relative z-10">
         <div className="relative inline-block">
           <div className="absolute -inset-4 bg-cyan-500/10 blur-xl rounded-full"></div>
-          <h1 className="text-7xl md:text-9xl font-black italic tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-white to-blue-600 drop-shadow-[0_0_30px_rgba(34,211,238,0.5)] font-orbitron">
-            CYBER<span className="text-white">BOT</span>
-          </h1>
-          <div className="absolute -top-6 -right-8 bg-cyan-600 text-white px-4 py-1 text-[10px] font-black uppercase rotate-12 font-orbitron shadow-[0_0_20px_rgba(6,182,212,0.6)] border border-white/20">
+          <img 
+            src="https://storage.googleapis.com/static.aistudio.google.com/content-attachments/58957827-046e-4467-876e-573574778174.png" 
+            alt="CYBERBOT" 
+            className="h-32 md:h-48 w-auto relative z-10 drop-shadow-[0_0_30px_rgba(34,211,238,0.5)]"
+            referrerPolicy="no-referrer"
+            crossOrigin="anonymous"
+            loading="eager"
+          />
+          <div className="absolute -top-6 -right-8 bg-cyan-600 text-white px-4 py-1 text-[10px] font-black uppercase rotate-12 font-orbitron shadow-[0_0_20px_rgba(6,182,212,0.6)] border border-white/20 z-20">
             SQUAD DEFENSE PROTOCOL
           </div>
         </div>
@@ -64,15 +71,7 @@ const MainMenu: React.FC<MainMenuProps> = ({ onStart, onContinue, onOpenBase, on
             </button>
 
             <button 
-              onClick={() => soundService.playTheTouch()}
-              className="group flex-1 min-w-[14rem] py-5 bg-yellow-600 hover:bg-yellow-500 text-white font-black text-xl md:text-2xl border-b-6 border-yellow-950 transition-all transform hover:scale-105 active:scale-95 shadow-[0_10px_20px_rgba(202,138,4,0.4)] flex items-center justify-center gap-3 font-orbitron"
-            >
-              <Music className="w-5 h-5 md:w-6 md:h-6 group-hover:animate-spin" />
-              THE TOUCH
-            </button>
-
-            <button 
-              onClick={onOpenHowToPlay}
+              onClick={onStartTutorial}
               className="group flex-1 min-w-[14rem] py-5 bg-purple-800 hover:bg-purple-700 text-white font-black text-xl md:text-2xl border-b-6 border-purple-950 transition-all transform hover:scale-105 active:scale-95 shadow-[0_10px_20px_rgba(107,33,168,0.4)] flex items-center justify-center gap-3 font-orbitron"
             >
               <HelpCircle className="w-5 h-5 md:w-6 md:h-6 group-hover:animate-bounce transition-transform" />
@@ -103,7 +102,7 @@ const MainMenu: React.FC<MainMenuProps> = ({ onStart, onContinue, onOpenBase, on
 
       {/* Footer Branding */}
       <div className="absolute bottom-4 left-4 flex items-center gap-2 opacity-50">
-        <ShieldAlert className="w-4 h-4 text-cyan-500" />
+        <Shield className="w-4 h-4 text-cyan-500" />
         <span className="text-[10px] text-cyan-700 font-black uppercase tracking-[0.5em] font-orbitron">Cyber Defense Network v.2.0</span>
       </div>
     </div>

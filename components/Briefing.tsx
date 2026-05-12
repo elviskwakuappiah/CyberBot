@@ -32,16 +32,6 @@ const Briefing: React.FC<BriefingProps> = ({ briefing, isLoading, onConfirm }) =
 
         {/* Scrollable Intel Section */}
         <div className="px-8 overflow-y-auto space-y-4 text-gray-300 font-medium pb-4">
-          <div className="flex justify-between items-center bg-gray-950 p-2 border-l-2 border-red-600 shrink-0">
-            <span className="text-red-400 text-xs uppercase font-bold">Threat Index</span>
-            <span className="text-white font-bold font-mono">{briefing.threatLevel || 'Scanning...'}</span>
-          </div>
-          
-          <div className="flex justify-between items-center bg-gray-950 p-2 border-l-2 border-cyan-600 shrink-0">
-            <span className="text-cyan-400 text-xs uppercase font-bold">Hostile Signature</span>
-            <span className="text-white font-bold font-mono">{briefing.enemyType || 'Analyzing...'}</span>
-          </div>
-
           <div className="p-4 bg-gray-950 rounded italic text-sm border border-gray-800 leading-relaxed shadow-inner min-h-[120px] relative shrink-0">
             {briefing.description || "Compiling tactical mission data. Sector environmental analysis and hostile movement patterns are being synchronized with squad command chassis. Initial scans reveal increased rogue activity in the urban periphery..."}
             {isLoading && (
@@ -58,11 +48,7 @@ const Briefing: React.FC<BriefingProps> = ({ briefing, isLoading, onConfirm }) =
 
         {/* Fixed Footer: Mission Deployment Area */}
         <div className="p-8 mt-auto flex flex-col space-y-4 bg-gray-900 border-t border-cyan-900/40 shrink-0 shadow-[0_-10px_20px_rgba(0,0,0,0.5)]">
-          <div className="text-[11px] text-gray-500 uppercase text-center font-black tracking-tight font-orbitron">
-            Primary Objective: Eliminate All Rogue Machine Units
-          </div>
-          
-          {/* START MISSION button - Guaranteed visible below Objective */}
+          {/* START MISSION button - Always visible */}
           <button 
             onClick={onConfirm}
             className="w-full py-6 bg-cyan-600 hover:bg-cyan-500 text-white font-black text-2xl transition-all border-b-8 border-cyan-900 shadow-[0_10px_30px_rgba(6,182,212,0.4)] uppercase font-orbitron group relative overflow-hidden active:translate-y-1 active:border-b-4"

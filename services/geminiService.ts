@@ -10,9 +10,7 @@ export const getStaticBriefing = (level: number): LevelInfo => {
     title: level === 30 ? "The Final Stand" : (level === 20 ? "Project Cyberrise" : (level === 5 ? "Tank-former Breach" : (level === 10 ? "Colossus Conflict" : `Sector ${level} Cleanup`))),
     description: level === 5 
         ? "Massive heavy-tread units have breached the outer wall. Mobilize the CyberBot squad to halt their advance." 
-        : (level === 20 ? "The Rogue Core has manifested. This is the end of the line for humanity. Combine and conquer or fall forever." : (level === 30 ? "The ultimate machine intelligence is here. All sectors depend on this final mission." : "Scouts report rogue hardware active in this sector. Neutralize all targets to secure the area.")),
-    threatLevel: level >= 25 ? "PLANETARY_THREAT" : (level >= 15 ? "Critical" : (level >= 5 ? "High" : "Moderate")),
-    enemyType: level === 30 ? "Rogue Core Sovereign" : (level === 20 ? "Prototype Colossus" : (level === 10 ? "Legionnaire Commander" : (level === 5 ? "Siege Tanks" : "Rogue Hardware")))
+        : (level === 20 ? "The Rogue Core has manifested. This is the end of the line for humanity. Combine and conquer or fall forever." : (level === 30 ? "The ultimate machine intelligence is here. All sectors depend on this final mission." : "Scouts report rogue hardware active in this sector. Neutralize all targets to secure the area."))
   };
 };
 
@@ -28,7 +26,7 @@ async function callGeminiWithRetry(level: number, specialPrompt: string, retries
       contents: `Generate a short mission briefing for Level ${level} of a game called CyberBot. 
       The CyberBots are specialized defenders protecting the planet from a rogue machine uprising.
       ${specialPrompt || "The goal is to destroy hostiles in the sector."}
-      Provide a cool title, threat level, and a 2-sentence description emphasizing the high-tech mechanical warfare.`,
+      Provide a cool title and a 2-sentence description emphasizing the high-tech mechanical warfare.`,
       config: {
         responseMimeType: "application/json",
         responseSchema: {
@@ -36,11 +34,9 @@ async function callGeminiWithRetry(level: number, specialPrompt: string, retries
           properties: {
             level: { type: Type.INTEGER },
             title: { type: Type.STRING },
-            description: { type: Type.STRING },
-            threatLevel: { type: Type.STRING },
-            enemyType: { type: Type.STRING }
+            description: { type: Type.STRING }
           },
-          required: ["level", "title", "description", "threatLevel", "enemyType"]
+          required: ["level", "title", "description"]
         }
       }
     });

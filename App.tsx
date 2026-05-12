@@ -1,9 +1,10 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { Settings as SettingsIcon, X, ShieldAlert, Key, BarChart3, Music as MusicIcon, Volume2, VolumeX, CheckCircle2, Database } from 'lucide-react';
+import { Settings as SettingsIcon, X, ShieldAlert, Key, BarChart3, Music as MusicIcon, Volume2, VolumeX, CheckCircle2, Database, LogOut } from 'lucide-react';
 import { GameState, LevelInfo, RobotUnit, Upgrades } from './types';
 import { getLevelBriefing, getStaticBriefing } from './services/geminiService';
 import { soundService } from './services/soundService';
+import { SECTORS } from './sectors';
 import MainMenu from './components/MainMenu';
 import Briefing from './components/Briefing';
 import GameView from './components/GameView';
@@ -13,6 +14,7 @@ import MilestoneVictory from './components/ChapterVictory';
 import Shop from './components/Shop';
 import LevelSelect from './components/LevelSelect';
 import HowToPlay from './components/HowToPlay';
+import AuthPage from './components/AuthPage';
 
 const SAVE_KEY = 'cyberbot_save_data_v4';
 const SETTINGS_KEY = 'cyberbot_settings_v3';
@@ -27,11 +29,10 @@ const DEFAULT_UPGRADES: Upgrades = {
 const MAX_CAMPAIGN_LEVELS = 30; 
 
 const App: React.FC = () => {
-  const [initialSaveData] = useState(() => {
-    const data = localStorage.getItem(SAVE_KEY);
-    if (!data) return null;
-    try { return JSON.parse(data); } catch (e) { return null; }
-  });
+  const [user, setUser] = useState<{ id: string; username: string; twoFactorEnabled: boolean } | null>(null);
+  const [isAuthLoading, setIsAuthLoading] = useState(true);
+
+  const [initialSaveData, setInitialSaveData] = useState<any>(null);
 
   const [settings, setSettings] = useState(() => {
     const data = localStorage.getItem(SETTINGS_KEY);
@@ -40,32 +41,66 @@ const App: React.FC = () => {
   });
 
   const [gameState, setGameState] = useState<GameState>(GameState.MENU);
-  const [level, setLevel] = useState<number>(initialSaveData?.level || 1);
-  const [maxUnlockedLevel, setMaxUnlockedLevel] = useState<number>(initialSaveData?.maxUnlockedLevel || 1);
-  const [money, setMoney] = useState<number>(initialSaveData?.money || 0);
-  const [isTitanSceneTriggered, setIsTitanSceneTriggered] = useState<boolean>(initialSaveData?.isTitanSceneTriggered || false);
-  const [isSector22Unlocked, setIsSector22Unlocked] = useState<boolean>(initialSaveData?.isSector22Unlocked || false);
-  const [upgrades, setUpgrades] = useState<Upgrades>(() => {
-    const loaded = initialSaveData?.upgrades;
-    if (!loaded) return DEFAULT_UPGRADES;
-    // Migration: ensure activeSquad exists
-    if (!loaded.activeSquad) {
-      return { ...loaded, activeSquad: loaded.unlockedUnits || [RobotUnit.SENTINEL] };
-    }
-    return loaded;
-  });
-  
+  const [isTutorialActive, setIsTutorialActive] = useState(false);
+  const [level, setLevel] = useState<number>(1);
+  const [maxUnlockedLevel, setMaxUnlockedLevel] = useState<number>(1);
+  const [money, setMoney] = useState<number>(0);
+  const [isTitanSceneTriggered, setIsTitanSceneTriggered] = useState<boolean>(false);
+  const [isSector22Unlocked, setIsSector22Unlocked] = useState<boolean>(false);
+  const [upgrades, setUpgrades] = useState<Upgrades>(DEFAULT_UPGRADES);
+
   const [briefing, setBriefing] = useState<LevelInfo | null>(null);
   const [isBriefingLoading, setIsBriefingLoading] = useState(false);
   const [baseOrigin, setBaseOrigin] = useState<GameState>(GameState.MENU);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [settingsTab, setSettingsTab] = useState<'sound' | 'account' | 'security'>('sound');
   const [justSaved, setJustSaved] = useState(false);
   const [savePulse, setSavePulse] = useState(false);
 
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const res = await fetch('/api/auth/me');
+        if (res.ok) {
+          const data = await res.json();
+          setUser(data.user);
+        }
+      } catch (err) {
+        console.error('Auth check failed', err);
+      } finally {
+        setIsAuthLoading(false);
+      }
+    };
+    checkAuth();
+  }, []);
+
+  useEffect(() => {
+    if (user) {
+      const userSaveKey = `${SAVE_KEY}_${user.username}`;
+      const data = localStorage.getItem(userSaveKey);
+      if (data) {
+        try {
+          const parsed = JSON.parse(data);
+          setLevel(parsed.level || 1);
+          setMaxUnlockedLevel(parsed.maxUnlockedLevel || 1);
+          setMoney(parsed.money || 0);
+          setIsTitanSceneTriggered(parsed.isTitanSceneTriggered || false);
+          setIsSector22Unlocked(parsed.isSector22Unlocked || false);
+          setUpgrades(parsed.upgrades || DEFAULT_UPGRADES);
+          setInitialSaveData(parsed);
+        } catch (e) {
+          console.error('Failed to parse save data', e);
+        }
+      }
+    }
+  }, [user]);
+
   const saveToDisk = useCallback(() => {
+    if (!user) return;
+    const userSaveKey = `${SAVE_KEY}_${user.username}`;
     const dataToSave = { level, maxUnlockedLevel, money, upgrades, isTitanSceneTriggered, isSector22Unlocked };
-    localStorage.setItem(SAVE_KEY, JSON.stringify(dataToSave));
-  }, [level, maxUnlockedLevel, money, upgrades, isTitanSceneTriggered, isSector22Unlocked]);
+    localStorage.setItem(userSaveKey, JSON.stringify(dataToSave));
+  }, [user, level, maxUnlockedLevel, money, upgrades, isTitanSceneTriggered, isSector22Unlocked]);
 
   useEffect(() => {
     saveToDisk();
@@ -129,26 +164,37 @@ const App: React.FC = () => {
     });
   }, []);
 
-  const handleStartGame = async () => startLevel(1);
+  const handleStartGame = async () => {
+    setIsTutorialActive(false);
+    startLevel(1);
+  };
+
+  const handleStartTutorial = () => {
+    setIsTutorialActive(true);
+    startLevel(1);
+  };
 
   const handleContinueGame = () => {
     startLevel(level);
   };
 
   const handleLevelComplete = () => {
-    const isMilestone = [10, 20, 30].includes(level);
-    const reward = isMilestone ? 15000 : 300;
+    const sector = SECTORS.find(s => s.id === level);
+    const isMilestone = sector ? !!sector.boss : false;
+    const reward = sector ? sector.reward : 300;
     setMoney(m => m + reward); 
     const newlyUnlocked = level + 1;
     if (newlyUnlocked > maxUnlockedLevel && newlyUnlocked <= MAX_CAMPAIGN_LEVELS) {
       setMaxUnlockedLevel(newlyUnlocked);
     }
     
+    const isMajorMilestone = level % 10 === 0;
+    
     if (level === 21 && isTitanSceneTriggered) {
       setIsSector22Unlocked(true);
     }
 
-    if (isMilestone) {
+    if (isMajorMilestone) {
       setGameState(GameState.MILESTONE_COMPLETE);
     } else {
       setGameState(GameState.LEVEL_COMPLETE);
@@ -214,6 +260,7 @@ const App: React.FC = () => {
   };
 
   const unlockRobotUnit = (unit: RobotUnit, price: number) => {
+    if (upgrades.unlockedUnits.length >= 5) return; // Strict 5-member limit
     if (money >= price && !upgrades.unlockedUnits.includes(unit)) {
       setMoney(m => m - price);
       setUpgrades(u => {
@@ -251,15 +298,95 @@ const App: React.FC = () => {
 
   const isGameVisible = gameState === GameState.PLAYING || gameState === GameState.PAUSED;
 
+  const handleLogout = async () => {
+    try {
+      await fetch('/api/auth/logout', { method: 'POST' });
+      setUser(null);
+      setGameState(GameState.MENU);
+      // Reset state
+      setLevel(1);
+      setMaxUnlockedLevel(1);
+      setMoney(0);
+      setIsTitanSceneTriggered(false);
+      setIsSector22Unlocked(false);
+      setUpgrades(DEFAULT_UPGRADES);
+      setInitialSaveData(null);
+    } catch (err) {
+      console.error('Logout failed', err);
+    }
+  };
+
+  const handleResetProgress = () => {
+    if (confirm('Are you sure? This will reset all your progress.')) {
+      setLevel(1);
+      setMaxUnlockedLevel(1);
+      setMoney(0);
+      setIsTitanSceneTriggered(false);
+      setIsSector22Unlocked(false);
+      setUpgrades(DEFAULT_UPGRADES);
+      saveToDisk();
+      setJustSaved(true);
+      setTimeout(() => setJustSaved(false), 2000);
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    if (confirm('Are you sure? This will delete your account and all progress forever.')) {
+      try {
+        const res = await fetch('/api/auth/delete', { method: 'DELETE' });
+        if (res.ok) {
+          setUser(null);
+          setGameState(GameState.MENU);
+          // Reset state
+          setLevel(1);
+          setMaxUnlockedLevel(1);
+          setMoney(0);
+          setIsTitanSceneTriggered(false);
+          setIsSector22Unlocked(false);
+          setUpgrades(DEFAULT_UPGRADES);
+          setInitialSaveData(null);
+        }
+      } catch (err) {
+        console.error('Delete account failed', err);
+      }
+    }
+  };
+
+  const handleToggle2FA = async () => {
+    try {
+      const res = await fetch('/api/auth/2fa/toggle', { method: 'POST' });
+      if (res.ok) {
+        const data = await res.json();
+        setUser(prev => prev ? { ...prev, twoFactorEnabled: data.twoFactorEnabled } : null);
+      }
+    } catch (err) {
+      console.error('Toggle 2FA failed', err);
+    }
+  };
+
+  if (isAuthLoading) {
+    return (
+      <div className="w-full h-screen bg-black flex items-center justify-center">
+        <div className="w-12 h-12 border-4 border-emerald-500/20 border-t-emerald-500 rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  if (!user) {
+    return <AuthPage onAuthSuccess={(userData) => setUser(userData)} />;
+  }
+
   return (
     <div className="w-full h-screen bg-black overflow-hidden select-none text-white font-rajdhani flex flex-col">
-      <button 
-        onClick={() => setIsSettingsOpen(true)} 
-        className="fixed top-4 left-4 z-[110] p-3 bg-gray-950/80 border border-cyan-900/50 text-cyan-500 hover:text-cyan-400 hover:border-cyan-400 hover:bg-cyan-950 transition-all rounded-full shadow-[0_0_15px_rgba(6,182,212,0.1)] group"
-        title="Settings Menu"
-      >
-        <SettingsIcon className="w-6 h-6 group-hover:rotate-90 transition-transform duration-500" />
-      </button>
+      {gameState !== GameState.PLAYING && (
+        <button 
+          onClick={() => setIsSettingsOpen(true)} 
+          className="fixed top-4 left-4 z-[110] p-3 bg-gray-950/80 border border-cyan-900/50 text-cyan-500 hover:text-cyan-400 hover:border-cyan-400 hover:bg-cyan-950 transition-all rounded-full shadow-[0_0_15px_rgba(6,182,212,0.1)] group"
+          title="Settings Menu"
+        >
+          <SettingsIcon className="w-6 h-6 group-hover:rotate-90 transition-transform duration-500" />
+        </button>
+      )}
 
       <div className={`fixed top-4 right-4 z-[110] flex items-center gap-2 transition-all duration-300 pointer-events-none ${savePulse ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-2'}`}>
         <div className="flex flex-col items-end">
@@ -271,7 +398,7 @@ const App: React.FC = () => {
 
       {isSettingsOpen && (
         <div className="fixed inset-0 z-[150] bg-black/95 backdrop-blur-xl flex items-center justify-center p-4">
-          <div className="max-w-3xl w-full bg-black border-2 border-cyan-500 p-8 relative shadow-[0_0_50px_rgba(6,182,212,0.3)] font-orbitron overflow-y-auto max-h-[90vh]">
+          <div className="max-w-2xl w-full bg-black border-2 border-cyan-500 p-8 relative shadow-[0_0_50px_rgba(6,182,212,0.3)] font-orbitron overflow-y-auto max-h-[90vh]">
             <button 
               onClick={() => setIsSettingsOpen(false)}
               className="absolute top-4 right-4 text-gray-500 hover:text-white transition-colors p-2"
@@ -280,100 +407,152 @@ const App: React.FC = () => {
             </button>
             
             <div className="mb-8 border-b-2 border-cyan-900 pb-4">
-              <h2 className="text-4xl font-black italic text-cyan-400 tracking-tighter uppercase">Operations Configuration</h2>
-              <div className="flex items-center gap-2 mt-1">
-                 <p className="text-[10px] text-cyan-700 tracking-[0.4em] font-bold uppercase">System_OS v4.2 //</p>
-                 <div className="flex items-center gap-1.5">
-                    <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></div>
-                    <span className="text-[9px] font-black text-emerald-600 uppercase tracking-widest">Auto-Save: Continuous Persistence</span>
-                 </div>
-              </div>
+              <h2 className="text-4xl font-black italic text-cyan-400 tracking-tighter uppercase">Settings</h2>
+            </div>
+
+            {/* Tab Navigation */}
+            <div className="flex gap-2 mb-8 border-b border-cyan-900/30 pb-4">
+              <button 
+                onClick={() => setSettingsTab('sound')}
+                className={`px-6 py-2 text-sm font-black uppercase tracking-widest transition-all ${settingsTab === 'sound' ? 'bg-cyan-500 text-black' : 'text-cyan-500 hover:bg-cyan-900/30'}`}
+              >
+                Sound
+              </button>
+              <button 
+                onClick={() => setSettingsTab('account')}
+                className={`px-6 py-2 text-sm font-black uppercase tracking-widest transition-all ${settingsTab === 'account' ? 'bg-cyan-500 text-black' : 'text-cyan-500 hover:bg-cyan-900/30'}`}
+              >
+                Account
+              </button>
+              <button 
+                onClick={() => setSettingsTab('security')}
+                className={`px-6 py-2 text-sm font-black uppercase tracking-widest transition-all ${settingsTab === 'security' ? 'bg-cyan-500 text-black' : 'text-cyan-500 hover:bg-cyan-900/30'}`}
+              >
+                Security
+              </button>
             </div>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-3">
-                <div className="flex items-center gap-2 text-cyan-400 border-b border-cyan-900/50 pb-2">
-                  <span className="text-xs font-black bg-cyan-900 px-2 py-0.5 rounded text-white">1</span>
-                  <BarChart3 className="w-4 h-4" />
-                  <h3 className="text-xs font-black uppercase tracking-widest">Operation Stats</h3>
+            <div className="min-h-[300px]">
+              {settingsTab === 'sound' && (
+                <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
+                  <div className="space-y-3">
+                    <h3 className="text-xs font-black uppercase tracking-widest text-cyan-400">Music</h3>
+                    <button 
+                      onClick={() => setSettings(s => ({ ...s, music: !s.music }))}
+                      className={`w-full p-6 flex items-center justify-between border transition-all ${settings.music ? 'border-cyan-500/50 bg-cyan-900/10' : 'border-gray-800 bg-gray-950 opacity-50'}`}
+                    >
+                      <span className="text-sm font-black uppercase tracking-widest">{settings.music ? 'ON' : 'OFF'}</span>
+                      {settings.music ? <Volume2 className="w-6 h-6 text-cyan-400" /> : <VolumeX className="w-6 h-6 text-gray-600" />}
+                    </button>
+                  </div>
+                  <div className="space-y-3">
+                    <h3 className="text-xs font-black uppercase tracking-widest text-cyan-400">Sound Effects</h3>
+                    <button 
+                      onClick={() => setSettings(s => ({ ...s, sound: !s.sound }))}
+                      className={`w-full p-6 flex items-center justify-between border transition-all ${settings.sound ? 'border-cyan-500/50 bg-cyan-900/10' : 'border-gray-800 bg-gray-950 opacity-50'}`}
+                    >
+                      <span className="text-sm font-black uppercase tracking-widest">{settings.sound ? 'ON' : 'OFF'}</span>
+                      {settings.sound ? <Volume2 className="w-6 h-6 text-cyan-400" /> : <VolumeX className="w-6 h-6 text-gray-600" />}
+                    </button>
+                  </div>
                 </div>
-                <div className="bg-gray-950 p-4 border border-gray-800 rounded flex flex-col gap-4">
-                  <div>
-                    <div className="flex justify-between text-[10px] mb-1">
-                      <span className="text-gray-500 font-bold uppercase">Campaign Clearance</span>
-                      <span className="text-cyan-400 font-mono">{maxUnlockedLevel}/{MAX_CAMPAIGN_LEVELS}</span>
+              )}
+
+              {settingsTab === 'account' && (
+                <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
+                  <div className="bg-gray-950 p-6 border border-gray-800 rounded space-y-6">
+                    <div>
+                      <div className="flex justify-between text-[10px] mb-2">
+                        <span className="text-gray-500 font-bold uppercase">Levels Finished</span>
+                        <span className="text-cyan-400 font-mono">{maxUnlockedLevel}/{MAX_CAMPAIGN_LEVELS}</span>
+                      </div>
+                      <div className="w-full h-2 bg-gray-900 rounded-full overflow-hidden">
+                        <div className="h-full bg-cyan-500 shadow-[0_0_10px_rgba(6,182,212,0.8)]" style={{ width: `${(maxUnlockedLevel/MAX_CAMPAIGN_LEVELS)*100}%` }}></div>
+                      </div>
                     </div>
-                    <div className="w-full h-1.5 bg-gray-900 rounded-full overflow-hidden">
-                      <div className="h-full bg-cyan-500 shadow-[0_0_10px_rgba(6,182,212,0.8)]" style={{ width: `${(maxUnlockedLevel/MAX_CAMPAIGN_LEVELS)*100}%` }}></div>
+                    
+                    <div className="grid grid-cols-1 gap-3">
+                      <button 
+                        onClick={handleSaveProgress}
+                        className="w-full flex items-center justify-between p-4 bg-emerald-600/10 hover:bg-emerald-600/20 border border-emerald-600/30 hover:border-emerald-500 transition-all text-xs font-black uppercase text-emerald-400"
+                      >
+                        <span className="flex items-center gap-2"><Database className="w-4 h-4" /> Save Game</span>
+                        <span>{justSaved ? 'SAVED' : 'SAVE'}</span>
+                      </button>
+                      <button 
+                        onClick={handleLogout}
+                        className="w-full flex items-center justify-between p-4 bg-red-600/10 hover:bg-red-600/20 border border-red-600/30 hover:border-red-500 transition-all text-xs font-black uppercase text-red-400"
+                      >
+                        <span className="flex items-center gap-2"><LogOut className="w-4 h-4" /> Log Out</span>
+                        <span>EXIT</span>
+                      </button>
                     </div>
                   </div>
-                  <div className="flex flex-col gap-2">
-                    <button 
-                      onClick={handleSaveProgress}
-                      className="w-full flex items-center justify-between p-2.5 bg-emerald-600/10 hover:bg-emerald-600/20 border border-emerald-600/30 hover:border-emerald-500 transition-all text-[9px] font-black uppercase text-emerald-400 shadow-[0_0_10px_rgba(16,185,129,0.1)]"
-                    >
-                      <span className="flex items-center gap-2"><Database className="w-3 h-3" /> Force Secure Sync</span>
-                      <span className={`${justSaved ? 'text-white' : 'text-emerald-600'}`}>{justSaved ? 'SAVED' : 'COMMIT'}</span>
-                    </button>
+
+                  {/* Danger Zone */}
+                  <div className="p-6 border-2 border-red-600 bg-red-950/20 space-y-4">
+                    <h3 className="text-red-500 font-black uppercase tracking-widest text-sm">Danger Zone</h3>
+                    <div className="grid grid-cols-1 gap-3">
+                      <button 
+                        onClick={handleResetProgress}
+                        className="w-full p-3 bg-red-600/20 hover:bg-red-600/40 border border-red-600/50 text-red-400 text-[10px] font-black uppercase tracking-widest transition-all"
+                      >
+                        Reset progress
+                      </button>
+                      <button 
+                        onClick={handleDeleteAccount}
+                        className="w-full p-3 bg-red-600 hover:bg-red-500 text-white text-[10px] font-black uppercase tracking-widest transition-all"
+                      >
+                        Delete account
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {settingsTab === 'security' && (
+                <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
+                  <div className="space-y-3">
+                    <h3 className="text-xs font-black uppercase tracking-widest text-cyan-400">Security Key</h3>
+                    <p className="text-[10px] text-gray-500 uppercase leading-relaxed">Use this to connect your AI brain to the game.</p>
                     <button 
                       onClick={() => { handleOpenKeySelection(); setIsSettingsOpen(false); }}
-                      className="w-full flex items-center justify-between p-2.5 bg-cyan-600/10 hover:bg-cyan-600/20 border border-cyan-600/30 hover:border-cyan-500 transition-all text-[9px] font-black uppercase"
+                      className="w-full flex items-center justify-between p-6 bg-cyan-600/10 hover:bg-cyan-600/20 border border-cyan-600/30 hover:border-cyan-500 transition-all text-sm font-black uppercase"
                     >
-                      <span className="flex items-center gap-2"><Key className="w-3 h-3" /> AI Tactical Uplink</span>
-                      <CheckCircle2 className="w-3 h-3 text-emerald-500" />
+                      <span className="flex items-center gap-2"><Key className="w-5 h-5" /> Set Key</span>
+                      <CheckCircle2 className="w-5 h-5 text-emerald-500" />
                     </button>
                   </div>
-                </div>
-              </div>
 
-              <div className="space-y-3">
-                <div className="flex items-center gap-2 text-cyan-400 border-b border-cyan-900/50 pb-2">
-                  <span className="text-xs font-black bg-cyan-900 px-2 py-0.5 rounded text-white">2</span>
-                  <MusicIcon className="w-4 h-4" />
-                  <h3 className="text-xs font-black uppercase tracking-widest">Ambient Audio</h3>
-                </div>
-                <button 
-                  onClick={() => setSettings(s => ({ ...s, music: !s.music }))}
-                  className={`w-full p-8 flex items-center justify-between border transition-all ${settings.music ? 'border-cyan-500/50 bg-cyan-900/10' : 'border-gray-800 bg-gray-950 opacity-50'}`}
-                >
-                  <div className="text-left">
-                    <span className="text-[12px] font-black uppercase tracking-widest block">{settings.music ? 'ENABLED' : 'DISABLED'}</span>
-                    <span className="text-[8px] text-gray-500">MISSION BACKGROUND THEME</span>
+                  <div className="space-y-3 pt-4 border-t border-cyan-900/30">
+                    <h3 className="text-xs font-black uppercase tracking-widest text-cyan-400">Extra Protection</h3>
+                    <button 
+                      onClick={handleToggle2FA}
+                      className={`w-full p-4 transition-all text-xs font-black uppercase ${
+                        user?.twoFactorEnabled 
+                          ? 'bg-red-600/10 hover:bg-red-600/20 border border-red-600/30 hover:border-red-500 text-red-400' 
+                          : 'bg-cyan-600/10 hover:bg-cyan-600/20 border border-cyan-600/30 hover:border-cyan-500 text-cyan-400'
+                      }`}
+                    >
+                      {user?.twoFactorEnabled ? 'Disable 2-Factor Authentication' : 'Enable 2-Factor Authentication'}
+                    </button>
+                    {user?.twoFactorEnabled && (
+                      <p className="text-[8px] text-emerald-500/60 uppercase tracking-widest text-center mt-2">
+                        Status: Active (Code: 123456)
+                      </p>
+                    )}
                   </div>
-                  {settings.music ? <Volume2 className="w-8 h-8 text-cyan-400" /> : <VolumeX className="w-8 h-8 text-gray-600" />}
-                </button>
-              </div>
-
-              <div className="space-y-3">
-                <div className="flex items-center gap-2 text-cyan-400 border-b border-cyan-900/50 pb-2">
-                  <span className="text-xs font-black bg-cyan-900 px-2 py-0.5 rounded text-white">3</span>
-                  <Volume2 className="w-4 h-4" />
-                  <h3 className="text-xs font-black uppercase tracking-widest">Tactical SFX</h3>
                 </div>
-                <button 
-                  onClick={() => setSettings(s => ({ ...s, sound: !s.sound }))}
-                  className={`w-full p-8 flex items-center justify-between border transition-all ${settings.sound ? 'border-cyan-500/50 bg-cyan-900/10' : 'border-gray-800 bg-gray-950 opacity-50'}`}
-                >
-                  <div className="text-left">
-                    <span className="text-[12px] font-black uppercase tracking-widest block">{settings.sound ? 'ENABLED' : 'DISABLED'}</span>
-                    <span className="text-[8px] text-gray-500">WEAPON & ENGINE FEEDBACK</span>
-                  </div>
-                  {settings.sound ? <Volume2 className="w-8 h-8 text-cyan-400" /> : <VolumeX className="w-8 h-8 text-gray-600" />}
-                </button>
-              </div>
+              )}
             </div>
 
-            <div className="mt-10 space-y-4">
+            <div className="mt-10">
               <button 
                 onClick={() => setIsSettingsOpen(false)}
-                className="w-full py-5 bg-cyan-600 hover:bg-cyan-500 text-white font-black text-xl transition-all border-b-8 border-cyan-950 uppercase shadow-[0_15px_30px_rgba(6,182,212,0.2)] active:translate-y-1 active:border-b-4"
+                className="w-full py-4 bg-cyan-600 hover:bg-cyan-500 text-white font-black text-lg transition-all border-b-4 border-cyan-900 uppercase active:translate-y-1 active:border-b-0"
               >
-                Save & Close Terminal
+                Close
               </button>
-              <div className="flex items-center justify-center gap-2 opacity-20">
-                <ShieldAlert className="w-4 h-4 text-cyan-500" />
-                <span className="text-[8px] uppercase tracking-[0.5em] font-mono">EDN-SECURE-PROTOCOL ACTIVE</span>
-              </div>
             </div>
           </div>
         </div>
@@ -384,6 +563,7 @@ const App: React.FC = () => {
           <MainMenu 
             onStart={handleStartGame} 
             onContinue={handleContinueGame} 
+            onStartTutorial={handleStartTutorial}
             onOpenBase={() => openBase(GameState.MENU)} 
             onOpenLevelSelect={() => setGameState(GameState.LEVEL_SELECT)} 
             onOpenHowToPlay={() => setGameState(GameState.HOW_TO_PLAY)}
@@ -423,7 +603,9 @@ const App: React.FC = () => {
             <h2 className="text-4xl font-black text-cyan-400 mb-8 uppercase italic tracking-tighter">Select Rescue Unit</h2>
             <p className="text-gray-400 mb-12 max-w-lg text-center uppercase text-sm tracking-widest">Only one unit can be deployed for the rescue mission. Choose wisely.</p>
             <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-              {upgrades.unlockedUnits.map(unit => (
+              {upgrades.unlockedUnits
+                .filter(unit => unit !== RobotUnit.SENTINEL)
+                .map(unit => (
                 <button 
                   key={unit}
                   onClick={() => handleSquadSelect(unit)}
@@ -448,6 +630,7 @@ const App: React.FC = () => {
             level={level} 
             upgrades={upgrades} 
             isPaused={gameState === GameState.PAUSED} 
+            isTutorial={isTutorialActive}
             onWin={handleLevelComplete} 
             onDie={handlePlayerDeath}
             onTitanScene={handleTitanScene}
@@ -468,7 +651,7 @@ const App: React.FC = () => {
 
         {gameState === GameState.MILESTONE_COMPLETE && (
           <MilestoneVictory 
-            milestone={level <= 10 ? 1 : level <= 20 ? 2 : 3} 
+            milestone={Math.floor(level / 10)} 
             onContinue={handleMilestoneContinue} 
           />
         )}
@@ -476,15 +659,15 @@ const App: React.FC = () => {
         {gameState === GameState.LEVEL_COMPLETE && (
           <div className="fixed inset-0 bg-black/95 flex flex-col items-center justify-start md:justify-center z-50 p-6 overflow-y-auto pt-20 md:pt-6 font-orbitron">
             <h2 className="text-4xl md:text-5xl text-cyan-400 mb-2 font-black italic tracking-tighter animate-pulse uppercase text-center">Sector {level} Secured</h2>
-            <div className="text-xl md:text-2xl text-yellow-400 mb-8 font-bold tracking-widest text-center">REWARD EARNED: ${[10, 20, 30].includes(level) ? 15000 : 300}</div>
+            <div className="text-xl md:text-2xl text-yellow-400 mb-8 font-bold tracking-widest text-center">REWARD EARNED: ${SECTORS.find(s => s.id === level)?.reward || 300}</div>
             <div className="flex flex-col items-center gap-6 w-full max-w-xs">
-              <button onClick={() => openBase(GameState.LEVEL_COMPLETE)} className="px-8 py-4 bg-yellow-600 hover:bg-yellow-500 text-white font-bold rounded-sm border-b-4 border-yellow-800 transition-all w-full uppercase">RETURN TO BASE</button>
+              <button onClick={() => openBase(GameState.LEVEL_COMPLETE)} style={{ height: '65px' }} className="px-8 py-4 bg-yellow-600 hover:bg-yellow-500 text-white font-bold rounded-sm border-b-4 border-yellow-800 transition-all w-full uppercase">RETURN TO BASE</button>
               {level < MAX_CAMPAIGN_LEVELS && (
-                <button onClick={handleNextLevel} className="px-12 py-4 font-black rounded-sm transition-all w-full shadow-[0_0_30px_rgba(6,182,212,0.3)] uppercase tracking-widest text-xl bg-cyan-700 hover:bg-cyan-600 text-white">
+                <button onClick={handleNextLevel} style={{ height: '88px' }} className="px-12 py-4 font-black rounded-sm transition-all w-full shadow-[0_0_30px_rgba(6,182,212,0.3)] uppercase tracking-widest text-xl bg-cyan-700 hover:bg-cyan-600 text-white">
                   Deploy to Sector {level + 1}
                 </button>
               )}
-              <button onClick={() => setGameState(GameState.MENU)} className="px-12 py-2 text-gray-400 font-bold hover:text-white transition-all uppercase text-sm mt-4 border border-gray-800 hover:border-gray-400 bg-gray-950/40 w-full">Return to HQ</button>
+              <button onClick={() => setGameState(GameState.MENU)} style={{ height: '50px' }} className="px-12 py-2 text-gray-400 font-bold hover:text-white transition-all uppercase text-sm mt-4 border border-gray-800 hover:border-gray-400 bg-gray-950/40 w-full">Return to HQ</button>
             </div>
           </div>
         )}

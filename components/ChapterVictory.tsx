@@ -21,8 +21,9 @@ const MilestoneVictory: React.FC<MilestoneVictoryProps> = ({ milestone, onContin
   ];
 
   useEffect(() => {
+    // Play the synthesized rock track with Gemini TTS vocals
     soundService.playTheTouch();
-    
+
     let timer: any;
     const advanceLyrics = (step: number) => {
       if (step < lyrics.length) {
@@ -34,7 +35,9 @@ const MilestoneVictory: React.FC<MilestoneVictoryProps> = ({ milestone, onContin
     };
 
     advanceLyrics(0);
-    return () => clearTimeout(timer);
+    return () => {
+      clearTimeout(timer);
+    };
   }, []);
 
   return (

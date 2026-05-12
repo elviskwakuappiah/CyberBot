@@ -1,6 +1,7 @@
 
 import React, { useState } from 'react';
-import { Lock, ChevronLeft, Map, Crosshair } from 'lucide-react';
+import { Lock, ChevronLeft, Map, Crosshair, Skull, TrendingUp } from 'lucide-react';
+import { SECTORS } from '../sectors';
 
 interface LevelSelectProps {
   onSelect: (level: number) => void;
@@ -12,8 +13,8 @@ const LevelSelect: React.FC<LevelSelectProps> = ({ onSelect, onBack, currentUnlo
   const totalSectors = 30;
 
   return (
-    <div className="h-full w-full flex flex-col items-center justify-start bg-gray-950 p-6 py-12 overflow-y-auto">
-      <div className="max-w-4xl w-full bg-black border-2 border-cyan-500 p-8 relative shadow-[0_0_30px_rgba(6,182,212,0.2)] min-h-[500px] flex flex-col">
+    <div className="h-screen w-full flex flex-col items-center justify-center bg-gray-950 p-4 overflow-hidden">
+      <div className="max-w-5xl w-full bg-black border-2 border-cyan-500 p-8 relative shadow-[0_0_30px_rgba(6,182,212,0.2)] max-h-[90vh] flex flex-col">
         <div className="absolute -top-4 left-10 bg-cyan-600 px-4 py-1 text-white font-black italic font-orbitron uppercase text-sm">Tactical Interface v5.0</div>
         
         <div className="flex justify-between items-center mb-8 border-b border-cyan-900 pb-4">
@@ -30,38 +31,56 @@ const LevelSelect: React.FC<LevelSelectProps> = ({ onSelect, onBack, currentUnlo
           </button>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 gap-4 mb-8 flex-1">
-          {[...Array(totalSectors)].map((_, i) => {
-            const levelNum = i + 1;
-            const isUnlocked = levelNum === 1 || levelNum <= currentUnlocked;
-            
-            return (
-              <button
-                key={levelNum}
-                disabled={!isUnlocked}
-                onClick={() => onSelect(levelNum)}
-                className={`relative group h-24 flex flex-col items-center justify-center border-2 transition-all overflow-hidden ${
-                  isUnlocked 
-                    ? 'border-cyan-800 bg-black hover:border-cyan-400 hover:bg-cyan-900/40 cursor-pointer shadow-[inset_0_0_10px_rgba(6,182,212,0.1)]' 
-                    : 'border-gray-900 bg-gray-950 cursor-not-allowed opacity-40 grayscale'
-                }`}
-              >
-                {!isUnlocked && (
-                  <div className="absolute inset-0 flex items-center justify-center bg-black/60 z-10">
-                    <Lock className="w-4 h-4 text-gray-700" />
-                  </div>
-                )}
-                <div className="absolute top-1 left-1 text-[8px] text-cyan-600 font-mono uppercase">SEC_{levelNum.toString().padStart(2, '0')}</div>
-                <span className={`text-2xl font-black font-orbitron ${isUnlocked ? 'text-white group-hover:text-cyan-400' : 'text-gray-700'}`}>
-                  {levelNum}
-                </span>
-                <span className={`text-[10px] uppercase tracking-widest font-bold mt-1 font-orbitron ${isUnlocked ? 'text-cyan-800' : 'text-gray-800'}`}>Sector</span>
-                
-                {[10, 20, 30].includes(levelNum) && <div className="absolute bottom-1 right-1 text-[6px] bg-red-900 text-red-200 px-1 font-orbitron uppercase">BOSS</div>}
-                {isUnlocked && <Crosshair className="absolute top-1 right-1 w-2 h-2 text-cyan-500/30 group-hover:text-cyan-400 transition-colors" />}
-              </button>
-            );
-          })}
+        <div className="flex-1 overflow-y-auto pr-2 mb-8 scrollbar-thin scrollbar-thumb-cyan-500 scrollbar-track-black">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
+            {SECTORS.map((sector) => {
+              const levelNum = sector.id;
+              const isUnlocked = levelNum === 1 || levelNum <= currentUnlocked;
+              const isBoss = !!sector.boss;
+              
+              return (
+                <button
+                  key={levelNum}
+                  disabled={!isUnlocked}
+                  onClick={() => onSelect(levelNum)}
+                  className={`relative group h-32 flex flex-col items-center justify-center border-2 transition-all overflow-hidden ${
+                    isUnlocked 
+                      ? 'border-cyan-800 bg-black hover:border-cyan-400 hover:bg-cyan-900/40 cursor-pointer shadow-[inset_0_0_10px_rgba(6,182,212,0.1)]' 
+                      : 'border-gray-900 bg-gray-950 cursor-not-allowed opacity-40 grayscale'
+                  }`}
+                >
+                  {!isUnlocked && (
+                    <div className="absolute inset-0 flex items-center justify-center bg-black/60 z-10">
+                      <Lock className="w-4 h-4 text-gray-700" />
+                    </div>
+                  )}
+                  <div className="absolute top-1 left-1 text-[8px] text-cyan-600 font-mono uppercase">SEC_{levelNum.toString().padStart(2, '0')}</div>
+                  
+                  <span className={`text-3xl font-black font-orbitron ${isUnlocked ? 'text-white group-hover:text-cyan-400' : 'text-gray-700'}`}>
+                    {levelNum}
+                  </span>
+                  
+                  <span className={`text-[10px] uppercase tracking-widest font-bold mt-1 font-orbitron ${isUnlocked ? 'text-cyan-800' : 'text-gray-800'}`}>
+                    {sector.name}
+                  </span>
+  
+                  {isUnlocked && (
+                    <div className="mt-2 text-[8px] text-emerald-500 font-mono font-bold uppercase flex items-center gap-1">
+                      <TrendingUp className="w-2 h-2" /> ${sector.reward}
+                    </div>
+                  )}
+                  
+                  {isBoss && (
+                    <div className="absolute bottom-1 right-1 flex items-center gap-1 bg-red-900/80 text-red-200 px-1.5 py-0.5 font-orbitron uppercase text-[7px] border border-red-500/30">
+                      <Skull className="w-2 h-2" /> BOSS
+                    </div>
+                  )}
+                  
+                  {isUnlocked && <Crosshair className="absolute top-1 right-1 w-2 h-2 text-cyan-500/30 group-hover:text-cyan-400 transition-colors" />}
+                </button>
+              );
+            })}
+          </div>
         </div>
 
         <div className="mt-auto pt-6 flex flex-col gap-6">

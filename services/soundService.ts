@@ -46,7 +46,7 @@ class SoundService {
   }
 
   private playRockBackingTrack(ctx: AudioContext, duration: number) {
-    const tempo = 132; 
+    const tempo = 138; 
     const beatDuration = 60 / tempo;
     const startTime = ctx.currentTime;
 
@@ -63,43 +63,66 @@ class SoundService {
       }
       return curve;
     }
-    distortion.curve = makeDistortionCurve(400);
+    distortion.curve = makeDistortionCurve(600);
     distortion.oversample = '4x';
-    distortion.connect(ctx.destination);
 
-    const playDrum = (freq: number, time: number, type: 'kick' | 'snare' | 'hihat') => {
+    // Reverb-ish delay
+    const delay = ctx.createDelay();
+    delay.delayTime.value = 0.15;
+    const feedback = ctx.createGain();
+    feedback.gain.value = 0.3;
+    delay.connect(feedback);
+    feedback.connect(delay);
+
+    const masterGain = ctx.createGain();
+    masterGain.gain.value = 0.8;
+    
+    distortion.connect(masterGain);
+    delay.connect(masterGain);
+    masterGain.connect(ctx.destination);
+
+    const playDrum = (time: number, type: 'kick' | 'snare' | 'hihat') => {
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
       
       if (type === 'kick') {
         osc.type = 'sine';
-        osc.frequency.setValueAtTime(180, time);
-        osc.frequency.exponentialRampToValueAtTime(40, time + 0.1);
-        gain.gain.setValueAtTime(0.5, time);
-        gain.gain.exponentialRampToValueAtTime(0.001, time + 0.3);
+        osc.frequency.setValueAtTime(150, time);
+        osc.frequency.exponentialRampToValueAtTime(40, time + 0.15);
+        gain.gain.setValueAtTime(1.0, time);
+        gain.gain.exponentialRampToValueAtTime(0.001, time + 0.4);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(time);
+        osc.stop(time + 0.4);
       } else if (type === 'snare') {
         osc.type = 'triangle';
-        osc.frequency.setValueAtTime(280, time);
-        gain.gain.setValueAtTime(0.4, time);
+        osc.frequency.setValueAtTime(250, time);
+        gain.gain.setValueAtTime(0.6, time);
         gain.gain.exponentialRampToValueAtTime(0.001, time + 0.2);
         
         const noise = ctx.createBufferSource();
-        const bufferSize = ctx.sampleRate * 0.15;
+        const bufferSize = ctx.sampleRate * 0.2;
         const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
         const data = buffer.getChannelData(0);
         for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
         noise.buffer = buffer;
         const filter = ctx.createBiquadFilter();
         filter.type = 'highpass';
-        filter.frequency.value = 1500;
+        filter.frequency.value = 1000;
         const snareGain = ctx.createGain();
-        snareGain.gain.setValueAtTime(0.3, time);
-        snareGain.gain.exponentialRampToValueAtTime(0.001, time + 0.2);
+        snareGain.gain.setValueAtTime(0.5, time);
+        snareGain.gain.exponentialRampToValueAtTime(0.001, time + 0.25);
         noise.connect(filter);
         filter.connect(snareGain);
         snareGain.connect(ctx.destination);
         noise.start(time);
-        noise.stop(time + 0.2);
+        noise.stop(time + 0.25);
+        
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(time);
+        osc.stop(time + 0.2);
       } else {
         const noise = ctx.createBufferSource();
         const bufferSize = ctx.sampleRate * 0.05;
@@ -109,9 +132,9 @@ class SoundService {
         noise.buffer = buffer;
         const filter = ctx.createBiquadFilter();
         filter.type = 'highpass';
-        filter.frequency.value = 8000;
+        filter.frequency.value = 7000;
         const hhGain = ctx.createGain();
-        hhGain.gain.setValueAtTime(0.1, time);
+        hhGain.gain.setValueAtTime(0.15, time);
         hhGain.gain.exponentialRampToValueAtTime(0.001, time + 0.05);
         noise.connect(filter);
         filter.connect(hhGain);
@@ -119,64 +142,83 @@ class SoundService {
         noise.start(time);
         noise.stop(time + 0.05);
       }
-      
-      if (type !== 'hihat') {
-        osc.connect(gain);
-        gain.connect(ctx.destination);
-        osc.start(time);
-        osc.stop(time + 0.3);
-      }
     };
 
-    const playBass = (freq: number, time: number, len: number) => {
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.type = 'sawtooth';
-      osc.frequency.setValueAtTime(freq / 2, time);
-      gain.gain.setValueAtTime(0, time);
-      gain.gain.linearRampToValueAtTime(0.15, time + 0.02);
-      gain.gain.linearRampToValueAtTime(0, time + len);
-      osc.connect(gain);
-      gain.connect(distortion);
-      osc.start(time);
-      osc.stop(time + len);
-    };
-
-    const playChord = (freqs: number[], time: number, len: number) => {
-      freqs.forEach(f => {
+    const playPowerChord = (rootFreq: number, time: number, len: number) => {
+      const freqs = [rootFreq, rootFreq * 1.5, rootFreq * 2]; // Root, 5th, Octave
+      freqs.forEach((f, i) => {
         const osc = ctx.createOscillator();
         const gain = ctx.createGain();
-        osc.type = 'square';
+        osc.type = i === 0 ? 'sawtooth' : 'square';
         osc.frequency.setValueAtTime(f, time);
+        
+        // Slight detune for thickness
+        osc.detune.setValueAtTime(i * 5, time);
+
         gain.gain.setValueAtTime(0, time);
-        gain.gain.linearRampToValueAtTime(0.08, time + 0.05);
-        gain.gain.linearRampToValueAtTime(0.06, time + len - 0.05);
+        gain.gain.linearRampToValueAtTime(0.12, time + 0.02);
+        gain.gain.linearRampToValueAtTime(0.1, time + len - 0.05);
         gain.gain.linearRampToValueAtTime(0, time + len);
+        
         osc.connect(gain);
         gain.connect(distortion);
+        gain.connect(delay);
         osc.start(time);
         osc.stop(time + len);
       });
     };
 
-    const chords = [
-      [261.63, 329.63, 392.00], // C Maj
-      [196.00, 246.94, 293.66], // G Maj
-      [220.00, 261.63, 329.63], // A Min
-      [174.61, 220.00, 261.63]  // F Maj
+    const playLead = (freq: number, time: number, len: number) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(freq, time);
+      osc.frequency.exponentialRampToValueAtTime(freq * 1.01, time + len); // Slight vibrato feel
+      
+      gain.gain.setValueAtTime(0, time);
+      gain.gain.linearRampToValueAtTime(0.1, time + 0.05);
+      gain.gain.linearRampToValueAtTime(0, time + len);
+      
+      osc.connect(gain);
+      gain.connect(distortion);
+      gain.connect(delay);
+      osc.start(time);
+      osc.stop(time + len);
+    };
+
+    const progression = [
+      261.63, // C
+      196.00, // G
+      220.00, // A
+      174.61  // F
+    ];
+
+    const leadMelody = [
+      523.25, 587.33, 659.25, 698.46, // C D E F
+      783.99, 698.46, 659.25, 523.25  // G F E C
     ];
 
     for (let i = 0; i < duration / beatDuration; i++) {
       const time = startTime + i * beatDuration;
-      if (i % 2 === 0) playDrum(150, time, 'kick');
-      else playDrum(250, time, 'snare');
-      playDrum(0, time + beatDuration/2, 'hihat');
+      
+      // Drums: Kick on 1 and 3, Snare on 2 and 4
+      if (i % 4 === 0 || i % 4 === 2) playDrum(time, 'kick');
+      else playDrum(time, 'snare');
+      
+      // Hi-hat on every eighth note
+      playDrum(time + beatDuration / 2, 'hihat');
 
+      // Chords change every bar (4 beats)
       if (i % 4 === 0) {
-        const chordIdx = Math.floor(i / 4) % chords.length;
-        playChord(chords[chordIdx], time, beatDuration * 3.8);
+        const root = progression[Math.floor(i / 4) % progression.length];
+        playPowerChord(root, time, beatDuration * 3.8);
       }
-      playBass(chords[Math.floor(i / 4) % chords.length][0], time, beatDuration * 0.9);
+
+      // Lead melody every 2 beats
+      if (i % 2 === 0) {
+        const leadFreq = leadMelody[Math.floor(i / 2) % leadMelody.length];
+        playLead(leadFreq, time, beatDuration * 1.8);
+      }
     }
   }
 
