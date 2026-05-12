@@ -297,46 +297,6 @@ const AuthPage: React.FC<AuthPageProps> = ({ onAuthSuccess }) => {
           <div>Node: 0x4F2A</div>
         </div>
 
-        {/* Security Section */}
-        <div className="w-full max-w-2xl mt-4 pt-4 border-t border-white/5">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <div className="space-y-4">
-              <div className="flex items-center gap-3 text-emerald-500">
-                <Shield className="w-6 h-6" />
-                <h3 className="text-sm font-bold uppercase tracking-widest">Security Protocols</h3>
-              </div>
-              <p className="text-zinc-500 text-xs leading-relaxed uppercase tracking-wider text-justify">
-                All transmissions are encrypted using military-grade 256-bit AES protocols. 
-                Unauthorized access attempts are logged and reported to the central command node.
-              </p>
-            </div>
-            <div className="space-y-4">
-              <div className="flex items-center gap-3 text-blue-500">
-                <Lock className="w-6 h-6" />
-                <h3 className="text-sm font-bold uppercase tracking-widest">Privacy Shield</h3>
-              </div>
-              <p className="text-zinc-500 text-xs leading-relaxed uppercase tracking-wider text-justify">
-                Account data is stored in isolated cold-storage vaults. 
-                Biometric signatures are hashed and never stored in plain-text format.
-              </p>
-            </div>
-          </div>
-          
-          <div className="mt-8 p-4 bg-zinc-900/30 border border-white/5 rounded-2xl">
-            <div className="flex items-start gap-4">
-              <div className="p-2 bg-emerald-500/10 rounded-lg">
-                <Shield className="w-4 h-4 text-emerald-500" />
-              </div>
-              <div>
-                <h4 className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-1">Compliance Notice</h4>
-                <p className="text-[9px] text-zinc-600 leading-relaxed uppercase tracking-widest">
-                  This terminal complies with the Cyber-Security Act of 2099. 
-                  By logging in, you agree to the terms of engagement and tactical data sharing.
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
       </motion.div>
     </div>
   );
