@@ -32,7 +32,13 @@ const AuthPage: React.FC<AuthPageProps> = ({ onAuthSuccess }) => {
           body: JSON.stringify({ userId: tempUserId, code: twoFactorCode }),
         });
 
-        const data = await response.json();
+        const responseText = await response.text();
+        let data;
+        try {
+          data = JSON.parse(responseText);
+        } catch (e) {
+          throw new Error(`Server returned invalid response format. Status: ${response.status}.`);
+        }
 
         if (!response.ok) {
           throw new Error(data.error || '2FA Verification failed');
@@ -56,7 +62,13 @@ const AuthPage: React.FC<AuthPageProps> = ({ onAuthSuccess }) => {
         body: JSON.stringify({ username, password, ...(isLogin ? {} : { email }) }),
       });
 
-      const data = await response.json();
+      const responseText = await response.text();
+      let data;
+      try {
+        data = JSON.parse(responseText);
+      } catch (e) {
+        throw new Error(`Server returned invalid response format. Status: ${response.status}. Please check the server logs.`);
+      }
 
       if (!response.ok) {
         throw new Error(data.error || 'Authentication failed');
