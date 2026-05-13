@@ -90,7 +90,7 @@ const AuthPage: React.FC<AuthPageProps> = ({ onAuthSuccess }) => {
   };
 
   return (
-    <div className="min-h-screen bg-[#050505] flex flex-col items-center justify-center py-4 px-4 font-sans text-white overflow-y-auto relative">
+    <div className="min-h-screen bg-[#050505] flex items-center justify-center p-4 font-sans text-white relative overflow-hidden">
       {/* Background Atmosphere */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-emerald-500/10 blur-[120px] rounded-full" />
@@ -98,15 +98,15 @@ const AuthPage: React.FC<AuthPageProps> = ({ onAuthSuccess }) => {
       </div>
 
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="w-full max-w-2xl relative z-10"
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        className="w-full max-w-[450px] relative z-10"
       >
-        <div className="text-center mb-6">
-          <Logo className="mb-2" />
+        <div className="text-center mb-8">
+          <Logo />
         </div>
 
-        <div className="w-full max-w-[450px] text-left font-mono text-[13px] border-white bg-zinc-900/50 backdrop-blur-xl border rounded-3xl shadow-2xl ml-0 mb-0 -mt-4 flex flex-col overflow-hidden relative mx-auto">
+        <div className="w-full text-left font-mono text-[13px] border-white bg-zinc-900/50 backdrop-blur-xl border rounded-3xl shadow-2xl flex flex-col overflow-hidden relative">
           <div className="flex-1 p-6">
             {!twoFactorRequired ? (
               <div className="flex gap-4 mb-6 p-1 bg-black/40 rounded-xl border border-white/5">
@@ -300,16 +300,16 @@ const AuthPage: React.FC<AuthPageProps> = ({ onAuthSuccess }) => {
           </div>
         </div>
 
-        <div className="mt-4 flex items-center justify-center gap-6 text-[9px] text-zinc-700 uppercase tracking-[0.2em] font-mono mb-4">
-          <div className="flex items-center gap-2">
-            <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-            System Online
-          </div>
-          <div>Secure Encryption Active</div>
-          <div>Node: 0x4F2A</div>
-        </div>
-
       </motion.div>
+
+      <div className="absolute bottom-4 left-0 right-0 flex items-center justify-center gap-6 text-[9px] text-zinc-700 uppercase tracking-[0.2em] font-mono pointer-events-none">
+        <div className="flex items-center gap-2">
+          <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+          System Online
+        </div>
+        <div>Secure Encryption Active</div>
+        <div>Node: 0x4F2A</div>
+      </div>
     </div>
   );
 };
