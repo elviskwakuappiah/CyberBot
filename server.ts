@@ -48,14 +48,25 @@ async function startServer() {
   const app = express();
   const PORT = 3000;
 
+  // Trust proxy is required for secure cookies behind reverse proxies (like Cloud Run)
+  app.set('trust proxy', 1);
+
   app.use(express.json());
   app.use(cookieParser());
 
+  // Logging middleware for debugging (only in development or if needed)
+  app.use((req, res, next) => {
+    if (process.env.NODE_ENV !== 'production') {
+      console.log(`${req.method} ${req.path}`);
+    }
+    next();
+  });
+
   // API Routes
-  app.post('/api/auth/signup', async (req, res, next) => {
+  app.post('/api/auth/signup', async (req: any, res: any, next: any) => {
     try {
-      const { username, password } = req.body;
-      if (!username || !password) return res.status(400).json({ error: 'Missing fields' });
+      const { username, password, email } = req.body;
+      if (!username || !password) return res.status(400).json({ error: 'Missing username or password' });
 
       const users = getUsers();
       if (users.find((u: any) => u.username === username)) {
@@ -66,6 +77,7 @@ async function startServer() {
       const newUser = { 
         id: Date.now().toString(), 
         username, 
+        email: email || '',
         password: hashedPassword,
         twoFactorEnabled: false 
       };
@@ -75,20 +87,24 @@ async function startServer() {
       const token = jwt.sign({ id: newUser.id, username: newUser.username }, JWT_SECRET, { expiresIn: '7d' });
       res.cookie('token', token, {
         httpOnly: true,
-        secure: true,
+        secure: true, // required for sameSite: 'none' in iframes
         sameSite: 'none',
-        maxAge: 7 * 24 * 60 * 60 * 1000
+        maxAge: 7 * 24 * 60 * 60 * 1000,
+        path: '/'
       });
 
       res.json({ user: { id: newUser.id, username: newUser.username, twoFactorEnabled: newUser.twoFactorEnabled } });
     } catch (e) {
+      console.error('Signup Error:', e);
       next(e);
     }
   });
 
-  app.post('/api/auth/login', async (req, res, next) => {
+  app.post('/api/auth/login', async (req: any, res: any, next: any) => {
     try {
       const { username, password } = req.body;
+      if (!username || !password) return res.status(400).json({ error: 'Missing username or password' });
+
       const users = getUsers();
       const user = users.find((u: any) => u.username === username);
 
@@ -96,24 +112,27 @@ async function startServer() {
         return res.status(401).json({ error: 'Account not found' });
       }
 
-      if (!(await bcrypt.compare(password, user.password))) {
+      const passwordMatch = await bcrypt.compare(password, user.password);
+      if (!passwordMatch) {
         return res.status(401).json({ error: 'Incorrect password' });
       }
 
       if (user.twoFactorEnabled) {
         return res.json({ twoFactorRequired: true, userId: user.id });
-              }
+      }
 
       const token = jwt.sign({ id: user.id, username: user.username }, JWT_SECRET, { expiresIn: '7d' });
       res.cookie('token', token, {
         httpOnly: true,
         secure: true,
         sameSite: 'none',
-        maxAge: 7 * 24 * 60 * 60 * 1000
+        maxAge: 7 * 24 * 60 * 60 * 1000,
+        path: '/'
       });
 
       res.json({ user: { id: user.id, username: user.username, twoFactorEnabled: user.twoFactorEnabled } });
     } catch (e) {
+      console.error('Login Error:', e);
       next(e);
     }
   });
@@ -182,7 +201,8 @@ async function startServer() {
         httpOnly: true,
         secure: true,
         sameSite: 'none',
-        maxAge: 7 * 24 * 60 * 60 * 1000
+        maxAge: 7 * 24 * 60 * 60 * 1000,
+        path: '/'
       });
 
       res.json({ user: { id: user.id, username: user.username, twoFactorEnabled: user.twoFactorEnabled } });
@@ -221,7 +241,7 @@ async function startServer() {
     app.use(vite.middlewares);
   } else {
     // Serve static files in production
-    const distPath = path.join(__dirname, 'dist');
+    const distPath = path.join(process.cwd(), 'dist');
     app.use(express.static(distPath));
     app.get('*all', (req, res) => {
       res.sendFile(path.join(distPath, 'index.html'));
@@ -230,8 +250,16 @@ async function startServer() {
 
   // Error Handler
   app.use((err: any, req: any, res: any, next: any) => {
-    console.error('Server Error:', err);
-    res.status(500).json({ error: 'Internal Server Error', message: err.message });
+    console.error('Server Internal Error:', {
+      message: err.message,
+      stack: err.stack,
+      path: req.path,
+      method: req.method
+    });
+    res.status(500).json({ 
+      error: 'Internal Server Error', 
+      message: err.message || 'An unexpected error occurred on the server.' 
+    });
   });
 
   // 404 Handler

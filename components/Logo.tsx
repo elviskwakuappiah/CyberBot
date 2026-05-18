@@ -4,7 +4,7 @@ import { motion } from 'motion/react';
 const Logo: React.FC<{ className?: string }> = ({ className }) => {
   return (
     <div className={`flex flex-col items-center justify-center ${className}`}>
-      <div className="relative w-32 h-32 flex items-center justify-center">
+      <div className="relative w-24 h-24 flex items-center justify-center">
         {/* Glowing Hexagon Background */}
         <div className="absolute inset-0 bg-emerald-500/20 blur-2xl rounded-full animate-pulse" />
         
@@ -53,11 +53,11 @@ const Logo: React.FC<{ className?: string }> = ({ className }) => {
         </svg>
       </div>
 
-      <div className="mt-4 text-center">
-        <h2 className="text-4xl font-black italic tracking-tighter uppercase text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 via-blue-500 to-purple-500 drop-shadow-[0_0_10px_rgba(16,185,129,0.3)]">
+      <div className="mt-1 text-center">
+        <h2 className="text-3xl font-black italic tracking-tighter uppercase text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 via-blue-500 to-purple-500 drop-shadow-[0_0_10px_rgba(16,185,129,0.3)]">
           CYBERBOT
         </h2>
-        <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-[0.4em] mt-1">
+        <p className="text-[9px] font-bold text-zinc-500 uppercase tracking-[0.4em] mt-0.5">
           ELVISAPPIAH.COM
         </p>
       </div>

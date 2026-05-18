@@ -90,7 +90,7 @@ const AuthPage: React.FC<AuthPageProps> = ({ onAuthSuccess }) => {
   };
 
   return (
-    <div className="min-h-screen bg-[#050505] flex flex-col items-center p-4 py-8 md:py-12 font-sans text-white relative overflow-y-auto selection:bg-emerald-500/30">
+    <div className="min-h-screen bg-[#050505] flex flex-col items-center p-4 py-4 md:py-6 font-sans text-white relative overflow-y-auto selection:bg-emerald-500/30">
       {/* Background Atmosphere */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-emerald-500/10 blur-[120px] rounded-full" />
@@ -101,19 +101,19 @@ const AuthPage: React.FC<AuthPageProps> = ({ onAuthSuccess }) => {
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
-          className="w-full max-w-[420px] relative z-10"
+          className="w-full max-w-[380px] relative z-10"
         >
-          <div className="text-center mb-4 scale-90 origin-bottom">
+          <div className="text-center mb-2 scale-75 origin-bottom">
             <Logo />
           </div>
 
           <div className="w-full text-left font-mono text-[13px] border-white bg-zinc-900/50 backdrop-blur-xl border rounded-3xl shadow-2xl flex flex-col overflow-hidden relative">
-            <div className="flex-1 p-5">
+            <div className="flex-1 p-4">
               {!twoFactorRequired ? (
-                <div className="flex gap-3 mb-5 p-1 bg-black/40 rounded-xl border border-white/5">
+                <div className="flex gap-3 mb-4 p-1 bg-black/40 rounded-xl border border-white/5">
                   <button
                     onClick={() => setIsLogin(true)}
-                    className={`flex-1 py-2.5 rounded-lg text-sm font-semibold transition-all duration-300 flex items-center justify-center gap-2 ${
+                    className={`flex-1 py-2 rounded-lg text-sm font-semibold transition-all duration-300 flex items-center justify-center gap-2 ${
                       isLogin ? 'bg-emerald-500 text-black shadow-lg shadow-emerald-500/20' : 'text-zinc-500 hover:text-white'
                     }`}
                   >
@@ -122,7 +122,7 @@ const AuthPage: React.FC<AuthPageProps> = ({ onAuthSuccess }) => {
                   </button>
                   <button
                     onClick={() => setIsLogin(false)}
-                    className={`flex-1 py-2.5 rounded-lg text-sm font-semibold transition-all duration-300 flex items-center justify-center gap-2 ${
+                    className={`flex-1 py-2 rounded-lg text-sm font-semibold transition-all duration-300 flex items-center justify-center gap-2 ${
                       !isLogin ? 'bg-emerald-500 text-black shadow-lg shadow-emerald-500/20' : 'text-zinc-500 hover:text-white'
                     }`}
                   >
@@ -163,7 +163,7 @@ const AuthPage: React.FC<AuthPageProps> = ({ onAuthSuccess }) => {
                             autoComplete="username"
                             value={username}
                             onChange={(e) => setUsername(e.target.value)}
-                            className="w-full bg-black/40 border border-white/10 rounded-xl py-3 pl-11 pr-4 text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500/50 transition-all placeholder:text-zinc-700"
+                            className="w-full bg-black/40 border border-white/10 rounded-xl py-2 pl-11 pr-4 text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500/50 transition-all placeholder:text-zinc-700"
                             placeholder="Enter username"
                             required
                           />
@@ -182,7 +182,7 @@ const AuthPage: React.FC<AuthPageProps> = ({ onAuthSuccess }) => {
                             autoComplete={isLogin ? "current-password" : "new-password"}
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
-                            className="w-full bg-black/40 border border-white/10 rounded-xl py-3 pl-11 pr-11 text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500/50 transition-all placeholder:text-zinc-700"
+                            className="w-full bg-black/40 border border-white/10 rounded-xl py-2 pl-11 pr-11 text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500/50 transition-all placeholder:text-zinc-700"
                             placeholder="Type your password"
                             required
                           />
@@ -209,7 +209,7 @@ const AuthPage: React.FC<AuthPageProps> = ({ onAuthSuccess }) => {
                               autoComplete="email"
                               value={email}
                               onChange={(e) => setEmail(e.target.value)}
-                              className="w-full bg-black/40 border border-white/10 rounded-xl py-3 pl-11 pr-4 text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500/50 transition-all placeholder:text-zinc-700"
+                              className="w-full bg-black/40 border border-white/10 rounded-xl py-2 pl-11 pr-4 text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500/50 transition-all placeholder:text-zinc-700"
                               placeholder="Enter your email"
                               required
                             />
@@ -222,19 +222,19 @@ const AuthPage: React.FC<AuthPageProps> = ({ onAuthSuccess }) => {
                       key="2fa"
                       initial={{ opacity: 0, scale: 0.95 }}
                       animate={{ opacity: 1, scale: 1 }}
-                      className="space-y-4"
+                      className="space-y-3"
                     >
-                      <div className="space-y-2">
-                        <label className="text-xs font-bold text-zinc-500 uppercase tracking-widest ml-1">
+                      <div className="space-y-1.5">
+                        <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest ml-1">
                           Verification Code
                         </label>
                         <div className="relative group">
-                          <Shield className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-500 group-focus-within:text-emerald-500 transition-colors" />
+                          <Shield className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500 group-focus-within:text-emerald-500 transition-colors" />
                           <input
                             type="text"
                             value={twoFactorCode}
                             onChange={(e) => setTwoFactorCode(e.target.value)}
-                            className="w-full bg-black/40 border border-white/10 rounded-xl py-4 pl-12 pr-4 text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 transition-all placeholder:text-zinc-700 text-center text-2xl tracking-[0.5em] font-mono"
+                            className="w-full bg-black/40 border border-white/10 rounded-xl py-3 pl-11 pr-4 text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 transition-all placeholder:text-zinc-700 text-center text-xl tracking-[0.5em] font-mono"
                             placeholder="000000"
                             maxLength={6}
                             required
@@ -267,7 +267,7 @@ const AuthPage: React.FC<AuthPageProps> = ({ onAuthSuccess }) => {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full bg-white text-black py-2.5 rounded-xl font-bold uppercase tracking-widest hover:bg-emerald-500 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 group"
+                  className="w-full bg-white text-black py-2 rounded-xl font-bold uppercase tracking-widest hover:bg-emerald-500 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 group"
                 >
                   {loading ? (
                     <div className="w-5 h-5 border-2 border-black/20 border-t-black rounded-full animate-spin" />
@@ -304,7 +304,7 @@ const AuthPage: React.FC<AuthPageProps> = ({ onAuthSuccess }) => {
       </div>
 
       {/* Footer Section */}
-      <div className="mt-8 w-full max-w-2xl flex flex-col items-center gap-4 relative z-10 shrink-0">
+      <div className="mt-4 w-full max-w-2xl flex flex-col items-center gap-3 relative z-10 shrink-0">
         <div className="flex items-center justify-center gap-6 text-[9px] text-zinc-700 uppercase tracking-[0.2em] font-mono">
           <div className="flex items-center gap-2">
             <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
@@ -314,11 +314,11 @@ const AuthPage: React.FC<AuthPageProps> = ({ onAuthSuccess }) => {
           <div>Node: 0x4F2A</div>
         </div>
 
-        <div className="text-center space-y-2">
-          <p className="text-[10px] text-zinc-600 uppercase tracking-widest">
+        <div className="text-center space-y-1">
+          <p className="text-[9px] text-zinc-600 uppercase tracking-widest">
             © 2026 CYBERBOT PROTOCOL. ALL RIGHTS RESERVED.
           </p>
-          <div className="flex items-center justify-center gap-4 text-[9px] text-zinc-800 uppercase tracking-widest font-bold">
+          <div className="flex items-center justify-center gap-3 text-[8px] text-zinc-800 uppercase tracking-widest font-bold">
             <a href="#" className="hover:text-emerald-500 transition-colors">Privacy Policy</a>
             <span className="w-1 h-1 rounded-full bg-zinc-800" />
             <a href="#" className="hover:text-emerald-500 transition-colors">Terms of Service</a>
