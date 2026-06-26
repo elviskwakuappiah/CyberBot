@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { LayoutGrid, PlayCircle, Home, HelpCircle, Shield } from 'lucide-react';
+import { LayoutGrid, PlayCircle, Home, HelpCircle, Shield, Trophy } from 'lucide-react';
 import { motion } from 'motion/react';
 import { soundService } from '../services/soundService';
 import Logo from './Logo';
@@ -12,10 +12,11 @@ interface MainMenuProps {
   onOpenBase: () => void;
   onOpenLevelSelect: () => void;
   onOpenHowToPlay: () => void;
+  onOpenDailyMissions: () => void;
   hasSave: boolean;
 }
 
-const MainMenu: React.FC<MainMenuProps> = ({ onStart, onContinue, onStartTutorial, onOpenBase, onOpenLevelSelect, onOpenHowToPlay, hasSave }) => {
+const MainMenu: React.FC<MainMenuProps> = ({ onStart, onContinue, onStartTutorial, onOpenBase, onOpenLevelSelect, onOpenHowToPlay, onOpenDailyMissions, hasSave }) => {
   return (
     <div className="min-h-full w-full flex flex-col items-center justify-start md:justify-center bg-gradient-to-b from-black via-gray-900 to-blue-950 p-4 py-12 relative overflow-y-auto">
       {/* Background Decorative Elements */}
@@ -47,28 +48,36 @@ const MainMenu: React.FC<MainMenuProps> = ({ onStart, onContinue, onStartTutoria
             {hasSave ? "CONTINUE MISSION" : "START MISSION"}
           </button>
           
-          <div className="flex flex-col md:flex-row gap-4 w-full md:w-auto">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 w-full md:w-[45rem]">
             <button 
               onClick={onOpenLevelSelect}
-              className="group flex-1 min-w-[14rem] py-5 bg-blue-800 hover:bg-blue-700 text-white font-black text-xl md:text-2xl border-b-6 border-blue-950 transition-all transform hover:scale-105 active:scale-95 shadow-[0_10px_20px_rgba(30,58,138,0.4)] flex items-center justify-center gap-3 font-orbitron"
+              className="group py-5 bg-blue-800 hover:bg-blue-700 text-white font-black text-xl border-b-6 border-blue-950 transition-all transform hover:scale-105 active:scale-95 shadow-[0_10px_20px_rgba(30,58,138,0.4)] flex items-center justify-center gap-2 font-orbitron"
             >
-              <LayoutGrid className="w-5 h-5 md:w-6 md:h-6 group-hover:rotate-90 transition-transform" />
+              <LayoutGrid className="w-5 h-5 group-hover:rotate-90 transition-transform" />
               SECTORS
             </button>
 
             <button 
               onClick={onOpenBase}
-              className="group flex-1 min-w-[14rem] py-5 bg-emerald-700 hover:bg-emerald-600 text-white font-black text-xl md:text-2xl border-b-6 border-emerald-950 transition-all transform hover:scale-105 active:scale-95 shadow-[0_10px_20px_rgba(5,150,105,0.4)] flex items-center justify-center gap-3 font-orbitron"
+              className="group py-5 bg-emerald-700 hover:bg-emerald-600 text-white font-black text-xl border-b-6 border-emerald-950 transition-all transform hover:scale-105 active:scale-95 shadow-[0_10px_20px_rgba(5,150,105,0.4)] flex items-center justify-center gap-2 font-orbitron"
             >
-              <Home className="w-5 h-5 md:w-6 md:h-6 group-hover:scale-110 transition-transform" />
+              <Home className="w-5 h-5 group-hover:scale-110 transition-transform" />
               BASE
             </button>
 
             <button 
-              onClick={onStartTutorial}
-              className="group flex-1 min-w-[14rem] py-5 bg-purple-800 hover:bg-purple-700 text-white font-black text-xl md:text-2xl border-b-6 border-purple-950 transition-all transform hover:scale-105 active:scale-95 shadow-[0_10px_20px_rgba(107,33,168,0.4)] flex items-center justify-center gap-3 font-orbitron"
+              onClick={onOpenDailyMissions}
+              className="group py-5 bg-amber-600 hover:bg-amber-500 text-white font-black text-xl border-b-6 border-amber-800 transition-all transform hover:scale-105 active:scale-95 shadow-[0_10px_20px_rgba(217,119,6,0.4)] flex items-center justify-center gap-2 font-orbitron"
             >
-              <HelpCircle className="w-5 h-5 md:w-6 md:h-6 group-hover:animate-bounce transition-transform" />
+              <Trophy className="w-5 h-5 group-hover:animate-pulse transition-transform text-yellow-300" />
+              MISSIONS
+            </button>
+
+            <button 
+              onClick={onStartTutorial}
+              className="group py-5 bg-purple-800 hover:bg-purple-700 text-white font-black text-xl border-b-6 border-purple-950 transition-all transform hover:scale-105 active:scale-95 shadow-[0_10px_20px_rgba(107,33,168,0.4)] flex items-center justify-center gap-2 font-orbitron"
+            >
+              <HelpCircle className="w-5 h-5 group-hover:animate-bounce transition-transform" />
               TUTORIAL
             </button>
           </div>

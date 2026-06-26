@@ -1,7 +1,9 @@
-import React, { useState } from 'react';
-import { LogIn, UserPlus, Shield, Lock, User, Eye, EyeOff, ChevronDown, Linkedin, Chrome, GraduationCap } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { LogIn, UserPlus, Shield, Lock, User, Eye, EyeOff } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import Logo from './Logo';
+import { loadSavedFavicon } from '../services/faviconService';
+import { safeStorage } from '../services/safeStorage';
 
 interface AuthPageProps {
   onAuthSuccess: (user: { id: string; username: string; twoFactorEnabled: boolean }) => void;
@@ -18,6 +20,10 @@ const AuthPage: React.FC<AuthPageProps> = ({ onAuthSuccess }) => {
   const [twoFactorRequired, setTwoFactorRequired] = useState(false);
   const [twoFactorCode, setTwoFactorCode] = useState('');
   const [tempUserId, setTempUserId] = useState('');
+
+  useEffect(() => {
+    loadSavedFavicon();
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -140,150 +146,264 @@ const AuthPage: React.FC<AuthPageProps> = ({ onAuthSuccess }) => {
                 </div>
               )}
 
-              <form onSubmit={handleSubmit} className="space-y-3">
-                <AnimatePresence mode="wait">
-                  {!twoFactorRequired ? (
-                    <motion.div
-                      key={isLogin ? 'login' : 'signup'}
-                      initial={{ opacity: 0, x: isLogin ? -20 : 20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      exit={{ opacity: 0, x: isLogin ? 20 : -20 }}
-                      transition={{ duration: 0.2 }}
-                      className="space-y-3"
-                    >
-                      <div className="space-y-1.5">
-                        <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest ml-1">
-                          Username
-                        </label>
-                        <div className="relative group">
-                          <User className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500 group-focus-within:text-emerald-500 transition-colors" />
-                          <input
-                            type="text"
-                            name="username"
-                            autoComplete="username"
-                            value={username}
-                            onChange={(e) => setUsername(e.target.value)}
-                            className="w-full bg-black/40 border border-white/10 rounded-xl py-2 pl-11 pr-4 text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500/50 transition-all placeholder:text-zinc-700"
-                            placeholder="Enter username"
-                            required
-                          />
-                        </div>
-                      </div>
-
-                      <div className="space-y-1.5">
-                        <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest ml-1">
-                          Password
-                        </label>
-                        <div className="relative group">
-                          <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500 group-focus-within:text-emerald-500 transition-colors" />
-                          <input
-                            type={showPassword ? 'text' : 'password'}
-                            name="password"
-                            autoComplete={isLogin ? "current-password" : "new-password"}
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            className="w-full bg-black/40 border border-white/10 rounded-xl py-2 pl-11 pr-11 text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500/50 transition-all placeholder:text-zinc-700"
-                            placeholder="Type your password"
-                            required
-                          />
-                          <button
-                            type="button"
-                            onClick={() => setShowPassword(!showPassword)}
-                            className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-white transition-colors"
-                          >
-                            {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                          </button>
-                        </div>
-                      </div>
-
-                      {!isLogin && (
-                        <div className="space-y-1.5">
-                          <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest ml-1">
-                            Email
-                          </label>
-                          <div className="relative group">
-                            <LogIn className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500 group-focus-within:text-emerald-500 transition-colors" />
-                            <input
-                              type="email"
-                              name="email"
-                              autoComplete="email"
-                              value={email}
-                              onChange={(e) => setEmail(e.target.value)}
-                              className="w-full bg-black/40 border border-white/10 rounded-xl py-2 pl-11 pr-4 text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500/50 transition-all placeholder:text-zinc-700"
-                              placeholder="Enter your email"
-                              required
-                            />
-                          </div>
-                        </div>
-                      )}
-                    </motion.div>
-                  ) : (
-                    <motion.div
-                      key="2fa"
-                      initial={{ opacity: 0, scale: 0.95 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      className="space-y-3"
-                    >
-                      <div className="space-y-1.5">
-                        <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest ml-1">
-                          Verification Code
-                        </label>
-                        <div className="relative group">
-                          <Shield className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500 group-focus-within:text-emerald-500 transition-colors" />
-                          <input
-                            type="text"
-                            value={twoFactorCode}
-                            onChange={(e) => setTwoFactorCode(e.target.value)}
-                            className="w-full bg-black/40 border border-white/10 rounded-xl py-3 pl-11 pr-4 text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 transition-all placeholder:text-zinc-700 text-center text-xl tracking-[0.5em] font-mono"
-                            placeholder="000000"
-                            maxLength={6}
-                            required
-                          />
-                        </div>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => setTwoFactorRequired(false)}
-                        className="w-full text-zinc-500 text-[10px] uppercase tracking-widest hover:text-white transition-colors"
-                      >
-                        Back to Login
-                      </button>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-
-                {error && (
-                  <motion.div
-                    initial={{ opacity: 0, y: -10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className={`p-3 border rounded-xl text-xs text-center font-medium ${
-                      twoFactorRequired ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-500' : 'bg-red-500/10 border-red-500/20 text-red-500'
-                    }`}
+              <AnimatePresence mode="wait">
+                {twoFactorRequired ? (
+                  <motion.form
+                    key="2fa"
+                    onSubmit={handleSubmit}
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.95 }}
+                    transition={{ duration: 0.2 }}
+                    className="space-y-3"
                   >
-                    {error}
-                  </motion.div>
-                )}
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest ml-1">
+                        Verification Code
+                      </label>
+                      <div className="relative group">
+                        <Shield className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500 group-focus-within:text-emerald-500 transition-colors" />
+                        <input
+                          type="text"
+                          value={twoFactorCode}
+                          onChange={(e) => setTwoFactorCode(e.target.value)}
+                          className="w-full bg-black/40 border border-white/10 rounded-xl py-3 pl-11 pr-4 text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 transition-all placeholder:text-zinc-700 text-center text-xl tracking-[0.5em] font-mono"
+                          placeholder="000000"
+                          maxLength={6}
+                          required
+                        />
+                      </div>
+                    </div>
 
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="w-full bg-white text-black py-2 rounded-xl font-bold uppercase tracking-widest hover:bg-emerald-500 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 group"
-                >
-                  {loading ? (
-                    <div className="w-5 h-5 border-2 border-black/20 border-t-black rounded-full animate-spin" />
-                  ) : (
-                    <>
-                      {twoFactorRequired ? 'Verify Identity' : (isLogin ? 'Log In' : 'Sign Up')}
+                    {error && (
                       <motion.div
-                        animate={{ x: [0, 4, 0] }}
-                        transition={{ repeat: Infinity, duration: 1.5 }}
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="p-3 border rounded-xl text-xs text-center font-medium bg-emerald-500/10 border-emerald-500/20 text-emerald-500"
                       >
-                        <LogIn className="w-4 h-4" />
+                        {error}
                       </motion.div>
-                    </>
-                  )}
-                </button>
-              </form>
+                    )}
+
+                    <button
+                      type="submit"
+                      disabled={loading}
+                      className="w-full bg-white text-black py-2 rounded-xl font-bold uppercase tracking-widest hover:bg-emerald-500 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 group"
+                    >
+                      {loading ? (
+                        <div className="w-5 h-5 border-2 border-black/20 border-t-black rounded-full animate-spin" />
+                      ) : (
+                        <>
+                          Verify Identity
+                          <motion.div
+                            animate={{ x: [0, 4, 0] }}
+                            transition={{ repeat: Infinity, duration: 1.5 }}
+                          >
+                            <LogIn className="w-4 h-4" />
+                          </motion.div>
+                        </>
+                      )}
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setTwoFactorRequired(false)}
+                      className="w-full text-zinc-500 text-[10px] uppercase tracking-widest hover:text-white transition-colors text-center"
+                    >
+                      Back to Login
+                    </button>
+                  </motion.form>
+                ) : isLogin ? (
+                  <motion.form
+                    key="login"
+                    onSubmit={handleSubmit}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: 20 }}
+                    transition={{ duration: 0.2 }}
+                    className="space-y-3"
+                  >
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest ml-1">
+                        Username
+                      </label>
+                      <div className="relative group">
+                        <User className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500 group-focus-within:text-emerald-500 transition-colors" />
+                        <input
+                          type="text"
+                          name="username"
+                          autoComplete="username"
+                          value={username}
+                          onChange={(e) => setUsername(e.target.value)}
+                          className="w-full bg-black/40 border border-white/10 rounded-xl py-2 pl-11 pr-4 text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500/50 transition-all placeholder:text-zinc-700"
+                          placeholder="Enter username"
+                          required
+                        />
+                      </div>
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest ml-1">
+                        Password
+                      </label>
+                      <div className="relative group">
+                        <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500 group-focus-within:text-emerald-500 transition-colors" />
+                        <input
+                          type={showPassword ? 'text' : 'password'}
+                          name="password"
+                          autoComplete="current-password"
+                          value={password}
+                          onChange={(e) => setPassword(e.target.value)}
+                          className="w-full bg-black/40 border border-white/10 rounded-xl py-2 pl-11 pr-11 text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500/50 transition-all placeholder:text-zinc-700"
+                          placeholder="Type your password"
+                          required
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowPassword(!showPassword)}
+                          className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-white transition-colors"
+                        >
+                          {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                        </button>
+                      </div>
+                    </div>
+
+                    {error && (
+                      <motion.div
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="p-3 border rounded-xl text-xs text-center font-medium bg-red-500/10 border-red-500/20 text-red-500"
+                      >
+                        {error}
+                      </motion.div>
+                    )}
+
+                    <button
+                      type="submit"
+                      disabled={loading}
+                      className="w-full bg-white text-black py-2 rounded-xl font-bold uppercase tracking-widest hover:bg-emerald-500 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 group"
+                    >
+                      {loading ? (
+                        <div className="w-5 h-5 border-2 border-black/20 border-t-black rounded-full animate-spin" />
+                      ) : (
+                        <>
+                          Log In
+                          <motion.div
+                            animate={{ x: [0, 4, 0] }}
+                            transition={{ repeat: Infinity, duration: 1.5 }}
+                          >
+                            <LogIn className="w-4 h-4" />
+                          </motion.div>
+                        </>
+                      )}
+                    </button>
+                  </motion.form>
+                ) : (
+                  <motion.form
+                    key="signup"
+                    onSubmit={handleSubmit}
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -20 }}
+                    transition={{ duration: 0.2 }}
+                    className="space-y-3"
+                  >
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest ml-1">
+                        Username
+                      </label>
+                      <div className="relative group">
+                        <User className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500 group-focus-within:text-emerald-500 transition-colors" />
+                        <input
+                          type="text"
+                          name="username"
+                          autoComplete="username"
+                          value={username}
+                          onChange={(e) => setUsername(e.target.value)}
+                          className="w-full bg-black/40 border border-white/10 rounded-xl py-2 pl-11 pr-4 text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500/50 transition-all placeholder:text-zinc-700"
+                          placeholder="Enter username"
+                          required
+                        />
+                      </div>
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest ml-1">
+                        Password
+                      </label>
+                      <div className="relative group">
+                        <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500 group-focus-within:text-emerald-500 transition-colors" />
+                        <input
+                          type={showPassword ? 'text' : 'password'}
+                          name="password"
+                          autoComplete="new-password"
+                          value={password}
+                          onChange={(e) => setPassword(e.target.value)}
+                          className="w-full bg-black/40 border border-white/10 rounded-xl py-2 pl-11 pr-11 text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500/50 transition-all placeholder:text-zinc-700"
+                          placeholder="Type your password"
+                          required
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowPassword(!showPassword)}
+                          className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-white transition-colors"
+                        >
+                          {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest ml-1">
+                        Email
+                      </label>
+                      <div className="relative group">
+                        <LogIn className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500 group-focus-within:text-emerald-500 transition-colors" />
+                        <input
+                          type="email"
+                          name="email"
+                          autoComplete="email"
+                          value={email}
+                          onChange={(e) => setEmail(e.target.value)}
+                          className="w-full bg-black/40 border border-white/10 rounded-xl py-2 pl-11 pr-4 text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500/50 transition-all placeholder:text-zinc-700"
+                          placeholder="Enter your email"
+                          required
+                        />
+                      </div>
+                    </div>
+
+                    {error && (
+                      <motion.div
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="p-3 border rounded-xl text-xs text-center font-medium bg-red-500/10 border-red-500/20 text-red-500"
+                      >
+                        {error}
+                      </motion.div>
+                    )}
+
+                    <button
+                      type="submit"
+                      disabled={loading}
+                      className="w-full bg-white text-black py-2 rounded-xl font-bold uppercase tracking-widest hover:bg-emerald-500 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 group"
+                    >
+                      {loading ? (
+                        <div className="w-5 h-5 border-2 border-black/20 border-t-black rounded-full animate-spin" />
+                      ) : (
+                        <>
+                          Sign Up
+                          <motion.div
+                            animate={{ x: [0, 4, 0] }}
+                            transition={{ repeat: Infinity, duration: 1.5 }}
+                          >
+                            <LogIn className="w-4 h-4" />
+                          </motion.div>
+                        </>
+                      )}
+                    </button>
+                  </motion.form>
+                )}
+              </AnimatePresence>
 
               {!twoFactorRequired && (
                 <div className="mt-5 pt-5 border-t border-white/5 text-center">
@@ -301,6 +421,7 @@ const AuthPage: React.FC<AuthPageProps> = ({ onAuthSuccess }) => {
             </div>
           </div>
         </motion.div>
+
       </div>
 
       {/* Footer Section */}

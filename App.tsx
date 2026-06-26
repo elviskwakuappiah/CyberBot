@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { Settings as SettingsIcon, X, ShieldAlert, Key, BarChart3, Music as MusicIcon, Volume2, VolumeX, CheckCircle2, Database, LogOut } from 'lucide-react';
+import { Settings as SettingsIcon, X, ShieldAlert, Key, BarChart3, Music as MusicIcon, Volume2, VolumeX, CheckCircle2, Database, LogOut, Bot, Check } from 'lucide-react';
 import { GameState, LevelInfo, RobotUnit, Upgrades } from './types';
 import { getLevelBriefing, getStaticBriefing } from './services/geminiService';
 import { soundService } from './services/soundService';
@@ -15,6 +15,10 @@ import Shop from './components/Shop';
 import LevelSelect from './components/LevelSelect';
 import HowToPlay from './components/HowToPlay';
 import AuthPage from './components/AuthPage';
+import { loadSavedFavicon, FAVICONS, saveAndApplyFavicon } from './services/faviconService';
+import { safeStorage } from './services/safeStorage';
+import { DailyMissions } from './components/DailyMissions';
+import { missionService } from './services/missionService';
 
 const SAVE_KEY = 'cyberbot_save_data_v4';
 const SETTINGS_KEY = 'cyberbot_settings_v3';
@@ -35,7 +39,7 @@ const App: React.FC = () => {
   const [initialSaveData, setInitialSaveData] = useState<any>(null);
 
   const [settings, setSettings] = useState(() => {
-    const data = localStorage.getItem(SETTINGS_KEY);
+    const data = safeStorage.getItem(SETTINGS_KEY);
     if (!data) return { music: true, sound: true };
     try { return JSON.parse(data); } catch (e) { return { music: true, sound: true }; }
   });
@@ -53,11 +57,16 @@ const App: React.FC = () => {
   const [isBriefingLoading, setIsBriefingLoading] = useState(false);
   const [baseOrigin, setBaseOrigin] = useState<GameState>(GameState.MENU);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-  const [settingsTab, setSettingsTab] = useState<'sound' | 'account' | 'security'>('sound');
+  const [settingsTab, setSettingsTab] = useState<'sound' | 'account' | 'security' | 'favicon'>('sound');
+  const [activeFaviconId, setActiveFaviconId] = useState(() => {
+    return safeStorage.getItem('cyberbot_favicon_id') || 'nexus_observer';
+  });
+  const [isDailyMissionsOpen, setIsDailyMissionsOpen] = useState(false);
   const [justSaved, setJustSaved] = useState(false);
   const [savePulse, setSavePulse] = useState(false);
 
   useEffect(() => {
+    loadSavedFavicon();
     const checkAuth = async () => {
       try {
         const res = await fetch('/api/auth/me');
@@ -77,7 +86,7 @@ const App: React.FC = () => {
   useEffect(() => {
     if (user) {
       const userSaveKey = `${SAVE_KEY}_${user.username}`;
-      const data = localStorage.getItem(userSaveKey);
+      const data = safeStorage.getItem(userSaveKey);
       if (data) {
         try {
           const parsed = JSON.parse(data);
@@ -99,7 +108,7 @@ const App: React.FC = () => {
     if (!user) return;
     const userSaveKey = `${SAVE_KEY}_${user.username}`;
     const dataToSave = { level, maxUnlockedLevel, money, upgrades, isTitanSceneTriggered, isSector22Unlocked };
-    localStorage.setItem(userSaveKey, JSON.stringify(dataToSave));
+    safeStorage.setItem(userSaveKey, JSON.stringify(dataToSave));
   }, [user, level, maxUnlockedLevel, money, upgrades, isTitanSceneTriggered, isSector22Unlocked]);
 
   useEffect(() => {
@@ -116,9 +125,15 @@ const App: React.FC = () => {
   }, [saveToDisk]);
 
   useEffect(() => {
-    localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+    safeStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
     soundService.soundEnabled = settings.sound;
   }, [settings]);
+
+  useEffect(() => {
+    if (user && upgrades.activeSquad.length >= 3) {
+      missionService.progressMission(user.username, 'SQUAD_SIZE_3', 1);
+    }
+  }, [user, upgrades.activeSquad]);
 
   useEffect(() => {
     const handleGlobalKeyDown = (e: KeyboardEvent) => {
@@ -188,6 +203,16 @@ const App: React.FC = () => {
       setMaxUnlockedLevel(newlyUnlocked);
     }
     
+    if (user) {
+      missionService.progressMission(user.username, 'COMPLETE_SECTOR', 1);
+      if (isMilestone) {
+        missionService.progressMission(user.username, 'COMPLETE_BOSS_SECTOR', 1);
+      }
+      if (level >= 5) {
+        missionService.progressMission(user.username, 'COMPLETE_HIGH_SECTOR', 1);
+      }
+    }
+
     const isMajorMilestone = level % 10 === 0;
     
     if (level === 21 && isTitanSceneTriggered) {
@@ -249,6 +274,9 @@ const App: React.FC = () => {
     if (money >= 100) {
       setMoney(m => m - 100);
       setUpgrades(u => ({ ...u, robotTier: u.robotTier + 1 }));
+      if (user) {
+        missionService.progressMission(user.username, 'UPGRADE_ARMOR', 1);
+      }
     }
   };
 
@@ -256,6 +284,9 @@ const App: React.FC = () => {
     if (money >= 50) {
       setMoney(m => m - 50);
       setUpgrades(u => ({ ...u, weaponTier: u.weaponTier + 1 }));
+      if (user) {
+        missionService.progressMission(user.username, 'UPGRADE_WEAPON', 1);
+      }
     }
   };
 
@@ -267,6 +298,9 @@ const App: React.FC = () => {
         const newUnlocked = [...u.unlockedUnits, unit];
         // Auto-add to squad if there's space
         const newActive = u.activeSquad.length < 5 ? [...u.activeSquad, unit] : u.activeSquad;
+        if (user) {
+          missionService.progressMission(user.username, 'RECRUIT_UNIT', 1);
+        }
         return {
           ...u,
           unlockedUnits: newUnlocked,
@@ -411,7 +445,7 @@ const App: React.FC = () => {
             </div>
 
             {/* Tab Navigation */}
-            <div className="flex gap-2 mb-8 border-b border-cyan-900/30 pb-4">
+            <div className="flex gap-2 mb-8 border-b border-cyan-900/30 pb-4 flex-wrap">
               <button 
                 onClick={() => setSettingsTab('sound')}
                 className={`px-6 py-2 text-sm font-black uppercase tracking-widest transition-all ${settingsTab === 'sound' ? 'bg-cyan-500 text-black' : 'text-cyan-500 hover:bg-cyan-900/30'}`}
@@ -429,6 +463,12 @@ const App: React.FC = () => {
                 className={`px-6 py-2 text-sm font-black uppercase tracking-widest transition-all ${settingsTab === 'security' ? 'bg-cyan-500 text-black' : 'text-cyan-500 hover:bg-cyan-900/30'}`}
               >
                 Security
+              </button>
+              <button 
+                onClick={() => setSettingsTab('favicon')}
+                className={`px-6 py-2 text-sm font-black uppercase tracking-widest transition-all ${settingsTab === 'favicon' ? 'bg-cyan-500 text-black' : 'text-cyan-500 hover:bg-cyan-900/30'}`}
+              >
+                Favicon
               </button>
             </div>
             
@@ -544,6 +584,60 @@ const App: React.FC = () => {
                   </div>
                 </div>
               )}
+
+              {settingsTab === 'favicon' && (
+                <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
+                  <div className="space-y-3">
+                    <h3 className="text-xs font-black uppercase tracking-widest text-cyan-400 flex items-center gap-2">
+                      <Bot className="w-4 h-4 text-emerald-400 animate-pulse" />
+                      Select System Favicon
+                    </h3>
+                    <p className="text-[10px] text-gray-500 uppercase leading-relaxed">
+                      Choose your terminal or profile indicator design. It will update your browser's tab icon dynamically!
+                    </p>
+                  </div>
+
+                  <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+                    {FAVICONS.map((fav) => {
+                      const isActive = activeFaviconId === fav.id;
+                      return (
+                        <button
+                          key={fav.id}
+                          type="button"
+                          onClick={() => {
+                            setActiveFaviconId(fav.id);
+                            saveAndApplyFavicon(fav.id);
+                          }}
+                          className={`relative p-3 rounded-xl flex flex-col items-center justify-center border-2 transition-all group ${
+                            isActive
+                              ? 'border-emerald-500 bg-emerald-500/5 shadow-[0_0_15px_rgba(16,185,129,0.25)]'
+                              : 'border-cyan-900/40 bg-black hover:border-cyan-500/30'
+                          }`}
+                          title={fav.name}
+                        >
+                          <div
+                            className="w-12 h-12 group-hover:scale-110 transition-transform duration-300 pointer-events-none"
+                            dangerouslySetInnerHTML={{ __html: fav.svg }}
+                          />
+                          <div className="mt-2 text-[8px] font-bold text-center uppercase tracking-widest text-gray-400 truncate max-w-full">
+                            {fav.name}
+                          </div>
+                          
+                          {isActive && (
+                            <div className="absolute top-1 right-1 bg-emerald-500 rounded-full p-0.5 shadow-md">
+                              <Check className="w-2.5 h-2.5 text-black stroke-[3]" />
+                            </div>
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  <div className="text-[10px] text-zinc-400 font-medium text-center uppercase tracking-widest bg-cyan-950/10 py-2 rounded-lg border border-cyan-900/30">
+                    Active Uplink Target: <span className="text-emerald-400 font-black">{FAVICONS.find(f => f.id === activeFaviconId)?.name || 'Nexus Observer'}</span>
+                  </div>
+                </div>
+              )}
             </div>
 
             <div className="mt-10">
@@ -567,7 +661,16 @@ const App: React.FC = () => {
             onOpenBase={() => openBase(GameState.MENU)} 
             onOpenLevelSelect={() => setGameState(GameState.LEVEL_SELECT)} 
             onOpenHowToPlay={() => setGameState(GameState.HOW_TO_PLAY)}
+            onOpenDailyMissions={() => setIsDailyMissionsOpen(true)}
             hasSave={!!initialSaveData} 
+          />
+        )}
+
+        {isDailyMissionsOpen && user && (
+          <DailyMissions 
+            username={user.username}
+            onClaimReward={(amt) => setMoney(m => m + amt)}
+            onClose={() => setIsDailyMissionsOpen(false)}
           />
         )}
         
