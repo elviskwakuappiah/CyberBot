@@ -59,7 +59,7 @@ const App: React.FC = () => {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [settingsTab, setSettingsTab] = useState<'sound' | 'account' | 'security' | 'favicon'>('sound');
   const [activeFaviconId, setActiveFaviconId] = useState(() => {
-    return safeStorage.getItem('cyberbot_favicon_id') || 'nexus_observer';
+    return safeStorage.getItem('cyberbot_favicon_id') || 'gemini_cyber';
   });
   const [isDailyMissionsOpen, setIsDailyMissionsOpen] = useState(false);
   const [justSaved, setJustSaved] = useState(false);

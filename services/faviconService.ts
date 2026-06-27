@@ -11,6 +11,67 @@ export interface FaviconOption {
 
 export const FAVICONS: FaviconOption[] = [
   {
+    id: 'gemini_cyber',
+    name: 'Gemini Cyber',
+    codename: 'GEMINI_CORE_X1',
+    color: '#00f3ff',
+    svg: `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'>
+  <defs>
+    <!-- Background Gradient -->
+    <linearGradient id='bg_grad' x1='0%' y1='0%' x2='100%' y2='100%'>
+      <stop offset='0%' stop-color='#0a0f1d' />
+      <stop offset='100%' stop-color='#070a14' />
+    </linearGradient>
+    <!-- Main Cyber Blue Gradient -->
+    <linearGradient id='cyber_blue' x1='0%' y1='0%' x2='100%' y2='100%'>
+      <stop offset='0%' stop-color='#00f3ff' />
+      <stop offset='100%' stop-color='#3b82f6' />
+    </linearGradient>
+    <!-- Secondary Purple Gradient for depth -->
+    <linearGradient id='neon_purple' x1='0%' y1='0%' x2='100%' y2='100%'>
+      <stop offset='0%' stop-color='#3b82f6' />
+      <stop offset='100%' stop-color='#7c3aed' />
+    </linearGradient>
+    <filter id='glow' x='-20%' y='-20%' width='140%' height='140%'>
+      <feGaussianBlur stdDeviation='2' result='blur' />
+      <feMerge>
+        <feMergeNode in='blur' />
+        <feMergeNode in='SourceGraphic' />
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <!-- Sleek rounded dark container -->
+  <rect x='2' y='2' width='96' height='96' rx='20' fill='url(#bg_grad)' stroke='#1e293b' stroke-width='2'/>
+  
+  <!-- Subtle Circuit Traces in Background -->
+  <path d='M75,15 H85 V25' stroke='#1e293b' stroke-width='1.5' fill='none' opacity='0.4'/>
+  <path d='M85,20 L90,25' stroke='#1e293b' stroke-width='1.5' fill='none' opacity='0.4'/>
+  <path d='M15,75 V85 H25' stroke='#1e293b' stroke-width='1.5' fill='none' opacity='0.4'/>
+  
+  <!-- Outer glowing hexagon frame (glowing C-shape) -->
+  <path d='M 72,25 L 42,25 L 20,50 L 42,75 L 72,75 L 65,68 L 45,68 L 28,50 L 45,32 L 65,32 Z' 
+        fill='url(#neon_purple)' filter='url(#glow)' opacity='0.6'/>
+  <path d='M 72,25 L 42,25 L 20,50 L 42,75 L 72,75 L 65,68 L 45,68 L 28,50 L 45,32 L 65,32 Z' 
+        fill='url(#cyber_blue)' stroke='#00f3ff' stroke-width='0.5'/>
+        
+  <!-- Robot Head Profile -->
+  <!-- Neck/collar -->
+  <path d='M 42,57 L 48,63 L 52,63 L 47,55 Z' fill='url(#cyber_blue)' opacity='0.85'/>
+  
+  <!-- Main Helmet Dome -->
+  <path d='M 48,35 A 13,13 0 0,0 41,52 L 53,52 L 57,48 L 54,39 Z' fill='url(#cyber_blue)'/>
+  
+  <!-- Visor (Extremely bright cyan glow) -->
+  <polygon points='52,42 63,44 61,49 51,47' fill='#ffffff' filter='url(#glow)'/>
+  <polygon points='52,42 63,44 61,49 51,47' fill='#00f3ff'/>
+  
+  <!-- Ear Cup -->
+  <circle cx='45' cy='48' r='5' fill='#0a0f1d' stroke='url(#cyber_blue)' stroke-width='2'/>
+  <circle cx='45' cy='48' r='1.5' fill='#00f3ff'/>
+</svg>`
+  },
+  {
     id: 'nexus_observer',
     name: 'Nexus Observer',
     codename: 'CYAN_OBSERVER_V5',
