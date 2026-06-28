@@ -11,6 +11,96 @@ export interface FaviconOption {
 
 export const FAVICONS: FaviconOption[] = [
   {
+    id: 'gemini_infinity',
+    name: 'CyberBot Infinity',
+    codename: 'INFINITY_CORE_V1',
+    color: '#00f3ff',
+    svg: `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'>
+  <defs>
+    <!-- Background Gradient -->
+    <linearGradient id='bg_grad' x1='0%' y1='0%' x2='100%' y2='100%'>
+      <stop offset='0%' stop-color='#060913' />
+      <stop offset='100%' stop-color='#03050a' />
+    </linearGradient>
+    <!-- Silver Metallic Gradient for robot and infinity casing -->
+    <linearGradient id='silver_metallic' x1='0%' y1='0%' x2='0%' y2='100%'>
+      <stop offset='0%' stop-color='#ffffff' />
+      <stop offset='30%' stop-color='#e2e8f0' />
+      <stop offset='70%' stop-color='#94a3b8' />
+      <stop offset='100%' stop-color='#475569' />
+    </linearGradient>
+    <!-- Deep Blue-Gray for loop structure backing -->
+    <linearGradient id='loop_back' x1='0%' y1='0%' x2='100%' y2='100%'>
+      <stop offset='0%' stop-color='#475569' />
+      <stop offset='100%' stop-color='#1e293b' />
+    </linearGradient>
+    <!-- Glow filter -->
+    <filter id='glow' x='-30%' y='-30%' width='160%' height='160%'>
+      <feGaussianBlur stdDeviation='3' result='blur' />
+      <feMerge>
+        <feMergeNode in='blur' />
+        <feMergeNode in='SourceGraphic' />
+      </feMerge>
+    </filter>
+    <!-- Subtle Visor Glow -->
+    <filter id='visor_glow' x='-20%' y='-20%' width='140%' height='140%'>
+      <feGaussianBlur stdDeviation='1.5' result='blur' />
+      <feMerge>
+        <feMergeNode in='blur' />
+        <feMergeNode in='SourceGraphic' />
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Sleek rounded dark container -->
+  <rect x='2' y='2' width='96' height='96' rx='20' fill='url(#bg_grad)' stroke='#111827' stroke-width='2'/>
+
+  <!-- Background circuit paths -->
+  <path d='M65,12 H82 V29' stroke='#1e293b' stroke-width='1.5' fill='none' opacity='0.3'/>
+  <path d='M82,20 L88,26' stroke='#1e293b' stroke-width='1.5' fill='none' opacity='0.3'/>
+  <path d='M15,70 V85 H30' stroke='#1e293b' stroke-width='1.5' fill='none' opacity='0.3'/>
+
+  <!-- INFINITY TRACK -->
+  <!-- 1. Thick Neon Cyan Under-Glow -->
+  <path d='M 51,55 C 63,33 84,33 84,55 C 84,77 63,77 51,55 C 39,33 18,33 18,55 C 18,77 39,77 51,55 Z' 
+        fill='none' stroke='#00f3ff' stroke-width='12' filter='url(#glow)' opacity='0.6'/>
+
+  <!-- 2. Thick Dark Loop Border -->
+  <path d='M 51,55 C 63,33 84,33 84,55 C 84,77 63,77 51,55 C 39,33 18,33 18,55 C 18,77 39,77 51,55 Z' 
+        fill='none' stroke='url(#loop_back)' stroke-width='9' stroke-linejoin='round'/>
+
+  <!-- 3. Thick Silver Metallic Track Base -->
+  <path d='M 51,55 C 63,33 84,33 84,55 C 84,77 63,77 51,55 C 39,33 18,33 18,55 C 18,77 39,77 51,55 Z' 
+        fill='none' stroke='url(#silver_metallic)' stroke-width='6' stroke-linejoin='round'/>
+
+  <!-- 4. Glowing Neon Cyan Center Line -->
+  <path d='M 51,55 C 63,33 84,33 84,55 C 84,77 63,77 51,55 C 39,33 18,33 18,55 C 18,77 39,77 51,55 Z' 
+        fill='none' stroke='#00f3ff' stroke-width='1.8' filter='url(#glow)' stroke-linecap='round'/>
+  <path d='M 51,55 C 63,33 84,33 84,55 C 84,77 63,77 51,55 C 39,33 18,33 18,55 C 18,77 39,77 51,55 Z' 
+        fill='none' stroke='#ffffff' stroke-width='0.6' stroke-linecap='round'/>
+
+  <!-- ROBOT UNIT -->
+  <!-- Robot Ear Caps (Backing) -->
+  <rect x='15.5' y='33' width='3.5' height='7' rx='1.5' fill='url(#silver_metallic)' stroke='#111827' stroke-width='0.5'/>
+  <rect x='41' y='33' width='3.5' height='7' rx='1.5' fill='url(#silver_metallic)' stroke='#111827' stroke-width='0.5'/>
+
+  <!-- Main Head Dome (Centered over Left Loop Center area) -->
+  <ellipse cx='30' cy='36.5' rx='13.5' ry='10.5' fill='url(#silver_metallic)' stroke='#0f172a' stroke-width='0.5'/>
+  <ellipse cx='30' cy='35.5' rx='12' ry='9' fill='#ffffff' opacity='0.25'/>
+
+  <!-- Face Shield/Visor Plate (Deep Dark Plate) -->
+  <rect x='20.5' y='31.5' width='19' height='9.5' rx='4.75' fill='#04060c' stroke='url(#silver_metallic)' stroke-width='1.5'/>
+  <rect x='21.5' y='32.5' width='17' height='7.5' rx='3.75' fill='#020408' stroke='#00f3ff' stroke-width='0.8' filter='url(#visor_glow)'/>
+
+  <!-- Glowing Cyan Eyes -->
+  <circle cx='26' cy='36.2' r='2.2' fill='#00f3ff' filter='url(#glow)'/>
+  <circle cx='26' cy='36.2' r='1.1' fill='#ffffff'/>
+  
+  <circle cx='34' cy='36.2' r='2.2' fill='#00f3ff' filter='url(#glow)'/>
+  <circle cx='34' cy='36.2' r='1.1' fill='#ffffff'/>
+</svg>`
+  },
+  {
     id: 'gemini_cyber',
     name: 'Gemini Cyber',
     codename: 'GEMINI_CORE_X1',
