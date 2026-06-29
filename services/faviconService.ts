@@ -14,7 +14,7 @@ export const FAVICONS: FaviconOption[] = [
     id: 'gemini_infinity',
     name: 'CyberBot Infinity',
     codename: 'INFINITY_CORE_V1',
-    color: '#10b981',
+    color: '#047857',
     svg: `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'>
   <defs>
     <!-- Background Gradient -->
@@ -51,52 +51,52 @@ export const FAVICONS: FaviconOption[] = [
       </feMerge>
     </filter>
   </defs>
-
+ 
   <!-- Sleek rounded dark container -->
   <rect x='2' y='2' width='96' height='96' rx='20' fill='url(#bg_grad)' stroke='#111827' stroke-width='2'/>
-
+ 
   <!-- Background circuit paths -->
   <path d='M65,12 H82 V29' stroke='#1e293b' stroke-width='1.5' fill='none' opacity='0.3'/>
   <path d='M82,20 L88,26' stroke='#1e293b' stroke-width='1.5' fill='none' opacity='0.3'/>
   <path d='M15,70 V85 H30' stroke='#1e293b' stroke-width='1.5' fill='none' opacity='0.3'/>
-
+ 
   <!-- INFINITY TRACK -->
   <!-- 1. Thick Neon Green Under-Glow -->
   <path d='M 51,55 C 63,33 84,33 84,55 C 84,77 63,77 51,55 C 39,33 18,33 18,55 C 18,77 39,77 51,55 Z' 
-        fill='none' stroke='#10b981' stroke-width='12' filter='url(#glow)' opacity='0.6'/>
-
+        fill='none' stroke='#047857' stroke-width='12' filter='url(#glow)' opacity='0.6'/>
+ 
   <!-- 2. Thick Dark Loop Border -->
   <path d='M 51,55 C 63,33 84,33 84,55 C 84,77 63,77 51,55 C 39,33 18,33 18,55 C 18,77 39,77 51,55 Z' 
         fill='none' stroke='url(#loop_back)' stroke-width='9' stroke-linejoin='round'/>
-
+ 
   <!-- 3. Thick Silver Metallic Track Base -->
   <path d='M 51,55 C 63,33 84,33 84,55 C 84,77 63,77 51,55 C 39,33 18,33 18,55 C 18,77 39,77 51,55 Z' 
         fill='none' stroke='url(#silver_metallic)' stroke-width='6' stroke-linejoin='round'/>
-
+ 
   <!-- 4. Glowing Neon Green Center Line -->
   <path d='M 51,55 C 63,33 84,33 84,55 C 84,77 63,77 51,55 C 39,33 18,33 18,55 C 18,77 39,77 51,55 Z' 
-        fill='none' stroke='#10b981' stroke-width='1.8' filter='url(#glow)' stroke-linecap='round'/>
+        fill='none' stroke='#047857' stroke-width='1.8' filter='url(#glow)' stroke-linecap='round'/>
   <path d='M 51,55 C 63,33 84,33 84,55 C 84,77 63,77 51,55 C 39,33 18,33 18,55 C 18,77 39,77 51,55 Z' 
         fill='none' stroke='#ffffff' stroke-width='0.6' stroke-linecap='round'/>
-
+ 
   <!-- ROBOT UNIT -->
   <!-- Robot Ear Caps (Backing) -->
   <rect x='15.5' y='33' width='3.5' height='7' rx='1.5' fill='url(#silver_metallic)' stroke='#111827' stroke-width='0.5'/>
   <rect x='41' y='33' width='3.5' height='7' rx='1.5' fill='url(#silver_metallic)' stroke='#111827' stroke-width='0.5'/>
-
+ 
   <!-- Main Head Dome (Centered over Left Loop Center area) -->
   <ellipse cx='30' cy='36.5' rx='13.5' ry='10.5' fill='url(#silver_metallic)' stroke='#0f172a' stroke-width='0.5'/>
   <ellipse cx='30' cy='35.5' rx='12' ry='9' fill='#ffffff' opacity='0.25'/>
-
+ 
   <!-- Face Shield/Visor Plate (Deep Dark Plate) -->
   <rect x='20.5' y='31.5' width='19' height='9.5' rx='4.75' fill='#04060c' stroke='url(#silver_metallic)' stroke-width='1.5'/>
-  <rect x='21.5' y='32.5' width='17' height='7.5' rx='3.75' fill='#020408' stroke='#10b981' stroke-width='0.8' filter='url(#visor_glow)'/>
-
+  <rect x='21.5' y='32.5' width='17' height='7.5' rx='3.75' fill='#020408' stroke='#047857' stroke-width='0.8' filter='url(#visor_glow)'/>
+ 
   <!-- Glowing Green Eyes -->
-  <circle cx='26' cy='36.2' r='2.2' fill='#10b981' filter='url(#glow)'/>
+  <circle cx='26' cy='36.2' r='2.2' fill='#047857' filter='url(#glow)'/>
   <circle cx='26' cy='36.2' r='1.1' fill='#ffffff'/>
   
-  <circle cx='34' cy='36.2' r='2.2' fill='#10b981' filter='url(#glow)'/>
+  <circle cx='34' cy='36.2' r='2.2' fill='#047857' filter='url(#glow)'/>
   <circle cx='34' cy='36.2' r='1.1' fill='#ffffff'/>
 </svg>`
   },
